@@ -3,7 +3,7 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   extends: [
     "react-app",
-    "plugin:compat/recommended",
+    // "plugin:compat/recommended",
     "prettier",
     // Remove any typescript-eslint rules that would conflict with prettier
     "prettier/@typescript-eslint",
