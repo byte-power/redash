@@ -31,7 +31,12 @@ def get_google_auth_url(next_path):
     return google_auth_url
 
 def get_microsoft_auth_url(next_path):
-    microsoft_auth_url = url_for("microsoft_oauth.authorize", next=next_path)
+    if settings.MULTI_ORG:
+        microsoft_auth_url = url_for(
+            "microsoft_oauth.authorize_org", next=next_path, org_slug=current_org.slug
+        )
+    else:
+        microsoft_auth_url = url_for("microsoft_oauth.authorize", next=next_path)
     return microsoft_auth_url
 
 def render_token_login_page(template, org_slug, token, invite):
