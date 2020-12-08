@@ -243,6 +243,7 @@ def logout_and_redirect_to_index():
 def init_app(app):
     from redash.authentication import (
         google_oauth,
+        microsoft_oauth,
         saml_auth,
         remote_user_auth,
         ldap_auth,
@@ -252,7 +253,7 @@ def init_app(app):
     login_manager.anonymous_user = models.AnonymousUser
 
     from redash.security import csrf
-    for auth in [google_oauth, saml_auth, remote_user_auth, ldap_auth]:
+    for auth in [google_oauth, microsoft_oauth, saml_auth, remote_user_auth, ldap_auth]:
         blueprint = auth.blueprint
         csrf.exempt(blueprint)
         app.register_blueprint(blueprint)
