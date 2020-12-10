@@ -27,7 +27,6 @@ function PublicDashboard({ dashboard }) {
 
   return (
     <div className="container p-t-10 p-b-20">
-      <h1>hello</h1>
       <PageHeader title={dashboard.name} />
       {!isEmpty(globalParameters) && (
         <div className="m-b-10 p-15 bg-white tiled">
