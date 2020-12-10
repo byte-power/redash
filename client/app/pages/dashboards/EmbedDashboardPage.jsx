@@ -12,6 +12,7 @@ import Filters from "@/components/Filters";
 
 import { Dashboard } from "@/services/dashboard";
 import routes from "@/services/routes";
+import location from "@/services/location";
 
 import logoUrl from "@/assets/images/redash_icon_small.png";
 
@@ -59,7 +60,7 @@ PublicDashboard.propTypes = {
 
 class EmbedDashboardPage extends React.Component {
   static propTypes = {
-    token: PropTypes.string.isRequired,
+    dashboardId: PropTypes.string.isRequired,
     onError: PropTypes.func,
   };
 
@@ -73,8 +74,10 @@ class EmbedDashboardPage extends React.Component {
   };
 
   componentDidMount() {
-    Dashboard.getByToken({ token: this.props.token })
-      .then(dashboard => this.setState({ dashboard, loading: false }))
+    Dashboard.getByToken({ token: this.props.dashboardId })
+      .then(dashboard => {
+        this.setState({ dashboard, loading: false });
+      })
       .catch(error => this.props.onError(error));
   }
 
@@ -105,11 +108,12 @@ class EmbedDashboardPage extends React.Component {
 routes.register(
   "Dashboards.EmbedViewOrEdit",
   routeWithApiKeySession({
-    path: "/embed/dashboards/:token",
+    path: "/embed/dashboard/:dashboardId",
     render: pageProps => {
-      console.log(110, pageProps);
       return <EmbedDashboardPage {...pageProps} />;
     },
-    getApiKey: currentRoute => currentRoute.routeParams.token,
+    getApiKey: currentRoute => {
+      return location.search.api_key;
+    },
   })
 );
