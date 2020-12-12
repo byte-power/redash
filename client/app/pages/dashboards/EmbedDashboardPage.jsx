@@ -20,10 +20,11 @@ import useDashboard from "./hooks/useDashboard";
 
 import "./EmbedDashboardPage.less";
 
-function PublicDashboard({ dashboard }) {
+function EmbedDashboard({ dashboard }) {
   const { globalParameters, filters, setFilters, refreshDashboard, loadWidget, refreshWidget } = useDashboard(
     dashboard
   );
+  console.log(27,globalParameters);
 
   return (
     <div className="container p-t-10 p-b-20">
@@ -53,7 +54,7 @@ function PublicDashboard({ dashboard }) {
   );
 }
 
-PublicDashboard.propTypes = {
+EmbedDashboard.propTypes = {
   dashboard: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
 };
 
@@ -89,7 +90,7 @@ class EmbedDashboardPage extends React.Component {
             <BigMessage className="" icon="fa-spinner fa-2x fa-pulse" message="Loading..." />
           </div>
         ) : (
-          <PublicDashboard dashboard={dashboard} />
+          <EmbedDashboard dashboard={dashboard} />
         )}
         <div id="footer">
           <div className="text-center">
