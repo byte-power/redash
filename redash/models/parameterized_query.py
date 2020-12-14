@@ -21,10 +21,13 @@ def _load_result(query_id, org):
     query = models.Query.get_by_id_and_org(query_id, org)
 
     if query.data_source:
-        query_result = models.QueryResult.get_by_id_and_org(
-            query.latest_query_data_id, org
-        )
-        return query_result.data
+        try:
+            query_result = models.QueryResult.get_by_id_and_org(
+                query.latest_query_data_id, org
+            )
+            return query_result.data
+        except models.NoResultFound:
+            raise QueryResultNotFound(query_id)
     else:
         raise QueryDetachedFromDataSourceError(query_id)
 
@@ -210,4 +213,11 @@ class QueryDetachedFromDataSourceError(Exception):
         self.query_id = query_id
         super(QueryDetachedFromDataSourceError, self).__init__(
             "This query is detached from any data source. Please select a different query."
+        )
+
+class QueryResultNotFound(Exception):
+    def __init__(self, query_id):
+        self.query_id = query_id
+        super(QueryResultNotFound, self).__init__(
+            "This query has no lastest result data. Please select a different query."
         )

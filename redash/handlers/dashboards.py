@@ -279,6 +279,27 @@ class PublicDashboardResource(BaseResource):
 
         return public_dashboard(dashboard)
 
+class EmbedDashboardResource(BaseResource):
+
+    def get(self, dashboard_id):
+        """
+        Retrieve a embed dashboard.
+
+        :qparam number id: Id of dashboard to retrieve
+        :>json array widgets: An array of arrays of :ref:`embed widgets <public-widget-label>`, corresponding to the rows and columns the widgets are displayed in
+        """
+        if self.current_org.get_setting("disable_embed_urls"):
+            abort(400, message="Embed URLs are disabled.")
+
+        if request.args.get("legacy") is not None:
+            fn = models.Dashboard.get_by_slug_and_org
+        else:
+            fn = models.Dashboard.get_by_id_and_org
+
+        dashboard = get_object_or_404(fn, dashboard_id, self.current_org)
+    
+        return public_dashboard(dashboard)
+
 
 class DashboardShareResource(BaseResource):
     def post(self, dashboard_id):

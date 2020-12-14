@@ -5,29 +5,34 @@ from redash.permissions import has_access
 from redash import models
 
 
-MockUser = namedtuple("MockUser", ["permissions", "group_ids"])
+MockUser = namedtuple("MockUser", ["permissions", "group_ids", "is_embed"])
 view_only = True
 
 
 class TestHasAccess(BaseTestCase):
     def test_allows_admin_regardless_of_groups(self):
-        user = MockUser(["admin"], [])
+        user = MockUser(["admin"], [], False)
 
         self.assertTrue(has_access({}, user, view_only))
         self.assertTrue(has_access({}, user, not view_only))
 
     def test_allows_if_user_member_in_group_with_view_access(self):
-        user = MockUser([], [1])
+        user = MockUser([], [1], False)
 
         self.assertTrue(has_access({1: view_only}, user, view_only))
 
     def test_allows_if_user_member_in_group_with_full_access(self):
-        user = MockUser([], [1])
+        user = MockUser([], [1], False)
 
         self.assertTrue(has_access({1: not view_only}, user, not view_only))
 
+    def test_allows_embed_with_view_access(self):
+        user = MockUser([], [], True)
+
+        self.assertTrue(has_access({}, user, view_only))
+
     def test_allows_if_user_member_in_multiple_groups(self):
-        user = MockUser([], [1, 2, 3])
+        user = MockUser([], [1, 2, 3], False)
 
         self.assertTrue(
             has_access({1: not view_only, 2: view_only}, user, not view_only)
@@ -39,7 +44,7 @@ class TestHasAccess(BaseTestCase):
         )
 
     def test_not_allows_if_not_enough_permission(self):
-        user = MockUser([], [1])
+        user = MockUser([], [1], False)
 
         self.assertFalse(has_access({1: view_only}, user, not view_only))
         self.assertFalse(has_access({2: view_only}, user, not view_only))

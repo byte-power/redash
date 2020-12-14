@@ -76,6 +76,17 @@ dashboard_factory = ModelFactory(
 
 api_key_factory = ModelFactory(redash.models.ApiKey, object=dashboard_factory.create)
 
+application_factory = ModelFactory(
+    redash.models.Application,
+    name="test",
+    active=True,
+    org=1,
+)
+
+application_dashboard_factory = ModelFactory(
+    redash.models.ApplicationDashboard,
+)
+
 query_factory = ModelFactory(
     redash.models.Query,
     name="Query",
@@ -283,6 +294,11 @@ class Factory(object):
         args.update(kwargs)
         return dashboard_factory.create(**args)
 
+    def create_access_token(self, **kwargs):
+        token = redash.models.AccessToken()
+        access_token = token.new(300)
+        return access_token
+
     def create_query(self, **kwargs):
         args = {"user": self.user, "data_source": self.data_source, "org": self.org}
         args.update(kwargs)
@@ -330,6 +346,16 @@ class Factory(object):
         args = {"org": self.org}
         args.update(kwargs)
         return api_key_factory.create(**args)
+
+    def create_application(self, **kwargs):
+        args = {"org": self.org}
+        args.update(kwargs)
+        return application_factory.create(**args)
+
+    def create_application_dashboard(self, **kwargs):
+        args = {"created_by_id": self.user.id}
+        args.update(kwargs)
+        return application_dashboard_factory.create(**args)
 
     def create_destination(self, **kwargs):
         args = {"org": self.org}

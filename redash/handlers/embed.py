@@ -1,4 +1,5 @@
 from flask import request
+from flask_restful import abort
 
 from .authentication import current_org
 from flask_login import current_user, login_required
@@ -29,6 +30,32 @@ def embed(query_id, visualization_id, org_slug=None):
         },
     )
     return render_index()
+
+@routes.route(
+    org_scoped_rule("/embed/dashboard/<dashboard_id>"),
+    methods=["GET"],
+)
+@login_required
+@csp_allows_embeding
+def embed_dashboard(dashboard_id, org_slug=None):
+    # check the application(current_user) has permissions to access this dashboard
+    if not models.ApplicationDashboard.check_dashboard_in_application(current_user.id, dashboard_id):
+        abort(403, message="Can't access to this dashboard.")
+
+    ttl = current_org.get_setting("embed_api_access_token_ttl")
+    access_token = models.AccessToken().new(ttl)
+    record_event(
+        current_org,
+        current_user._get_current_object(),
+        {
+            "action": "view",
+            "object_id": dashboard_id,
+            "object_type": "dashboard",
+            "embed": True,
+            "referer": request.headers.get("Referer"),
+        },
+    )
+    return render_index(access_token=access_token)
 
 
 @routes.route(org_scoped_rule("/public/dashboards/<token>"), methods=["GET"])

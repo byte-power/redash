@@ -17,6 +17,7 @@ from redash.handlers.dashboards import (
     DashboardShareResource,
     DashboardTagsResource,
     PublicDashboardResource,
+    EmbedDashboardResource,
 )
 from redash.handlers.data_sources import (
     DataSourceListResource,
@@ -87,6 +88,15 @@ from redash.handlers.visualizations import (
     VisualizationListResource,
     VisualizationResource,
 )
+from redash.handlers.application import (
+    ApplicationListResource,
+    ApplicationResource,
+    ApplicationRegenerateSecretToken,
+    ApplicationDashoardListResource,
+    DashboardApplicationListResource,
+    ApplicationDashboardResource,
+    DashboardApplicationResource,
+)
 from redash.handlers.widgets import WidgetListResource, WidgetResource
 from redash.utils import json_dumps
 
@@ -129,6 +139,11 @@ api.add_org_resource(AlertListResource, "/api/alerts", endpoint="alerts")
 api.add_org_resource(DashboardListResource, "/api/dashboards", endpoint="dashboards")
 api.add_org_resource(
     DashboardResource, "/api/dashboards/<dashboard_id>", endpoint="dashboard"
+)
+api.add_org_resource(
+    EmbedDashboardResource,
+    "/api/dashboards/embed/<dashboard_id>",
+    endpoint="embed_dashboard",
 )
 api.add_org_resource(
     PublicDashboardResource,
@@ -328,4 +343,29 @@ api.add_org_resource(
 
 api.add_org_resource(
     OrganizationSettings, "/api/settings/organization", endpoint="organization_settings"
+)
+
+api.add_org_resource(ApplicationListResource, "/api/applications", endpoint="applications")
+api.add_org_resource(ApplicationResource, "/api/applications/<application_id>", endpoint="application")
+api.add_org_resource(
+    ApplicationRegenerateSecretToken,
+    "/api/applications/<application_id>/regenerate_secret_token",
+    endpoint="regenerate_application_secret_token"
+)
+
+api.add_org_resource(
+    ApplicationDashoardListResource, "/api/applications/<application_id>/dashboards", endpoint="application_dashboards"
+)
+api.add_org_resource(
+    ApplicationDashboardResource,
+    "/api/applications/<application_id>/dashboards/<dashboard_id>",
+    endpoint="application_dashboard",
+)
+api.add_org_resource(
+    DashboardApplicationListResource, "/api/dashboards/<dashboard_id>/applications", endpoint="dashboard_applications"
+)
+api.add_org_resource(
+    DashboardApplicationResource,
+    "/api/dashboards/<dashboard_id>/applications/<application_id>",
+    endpoint="dashboard_application",
 )

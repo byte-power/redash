@@ -303,6 +303,7 @@ def client_config():
             "hide_plotly_mode_bar"
         ),
         "disablePublicUrls": current_org.get_setting("disable_public_urls"),
+        "disableEmbedUrls": current_org.get_setting("disable_embed_urls"),
         "allowCustomJSVisualizations": settings.FEATURE_ALLOW_CUSTOM_JS_VISUALIZATIONS,
         "autoPublishNamedQueries": settings.FEATURE_AUTO_PUBLISH_NAMED_QUERIES,
         "extendedAlertOptions": settings.FEATURE_EXTENDED_ALERT_OPTIONS,
