@@ -164,7 +164,8 @@ const DashboardService = {
     return axios.get(`api/dashboards/${id || slug}`, { params }).then(transformResponse);
   },
   getByToken: ({ token }) => axios.get(`api/dashboards/public/${token}`).then(transformResponse),
-  getEmbed: ({ dashboard_id }) => axios.get(`/api/dashboards/embed/${dashboard_id}`).then(transformResponse),
+  getEmbed: ({ dashboard_id, token }) =>
+    axios.get(`/api/dashboards/embed/${dashboard_id}?access_token=${token}`).then(transformResponse),
   save: data => axios.post(saveOrCreateUrl(data), data).then(transformResponse),
   delete: ({ id }) => axios.delete(`api/dashboards/${id}`).then(transformResponse),
   query: params => axios.get("api/dashboards", { params }).then(transformResponse),

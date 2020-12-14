@@ -24,7 +24,6 @@ function EmbedDashboard({ dashboard }) {
   const { globalParameters, filters, setFilters, refreshDashboard, loadWidget, refreshWidget } = useDashboard(
     dashboard
   );
-  console.log(27,globalParameters);
 
   return (
     <div className="container p-t-10 p-b-20">
@@ -74,7 +73,7 @@ class EmbedDashboardPage extends React.Component {
   };
 
   componentDidMount() {
-    Dashboard.getByToken({ token: this.props.dashboardId })
+    Dashboard.getEmbed({ dashboard_id: this.props.dashboardId, token: this.props.token })
       .then(dashboard => {
         this.setState({ dashboard, loading: false });
       })
@@ -110,10 +109,10 @@ routes.register(
   routeWithApiKeySession({
     path: "/embed/dashboard/:dashboardId",
     render: pageProps => {
-      return <EmbedDashboardPage {...pageProps} />;
+      return <EmbedDashboardPage {...pageProps} token={location.search.access_token} />;
     },
     getApiKey: currentRoute => {
-      return location.search.api_key;
+      return location.search.access_token;
     },
   })
 );
