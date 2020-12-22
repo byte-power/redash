@@ -350,7 +350,7 @@ class QueryResult {
 
   loadLatestCachedResult(queryId, parameters) {
     axios
-      .post(`api/queries/${queryId}/results`, { queryId, parameters })
+      .post(`api/queries/${queryId}/results?access_token=234`, { queryId, parameters })
       .then(response => {
         this.update(response);
       })
@@ -396,7 +396,7 @@ class QueryResult {
 
     const request = Auth.isAuthenticated()
       ? axios.get(`api/jobs/${this.job.id}`)
-      : axios.get(`api/queries/${query}/jobs/${this.job.id}`);
+      : axios.get(`api/queries/${query}/jobs/${this.job.id}?access_token=123`);
 
     request
       .then(jobResponse => {
