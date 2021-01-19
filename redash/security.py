@@ -37,6 +37,8 @@ def init_app(app):
     if settings.ENFORCE_CSRF:
         @app.before_request
         def check_csrf():
+            if not request.endpoint:
+                return
             # BEGIN workaround until https://github.com/lepture/flask-wtf/pull/419 is merged
             if request.blueprint in csrf._exempt_blueprints:
                 return
