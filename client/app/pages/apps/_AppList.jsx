@@ -36,7 +36,20 @@ class AppsList extends React.Component {
         </div>
       ),
       {
+        title: "Name",
         field: "name",
+        width: null,
+      }
+    ),
+    Columns.custom(
+      (text, app) => (
+        <div>
+          {app.active ? "Actived" : "Deactived"}={app.description}
+        </div>
+      ),
+      {
+        title: "Status",
+        field: "active",
         width: null,
       }
     ),
@@ -47,6 +60,7 @@ class AppsList extends React.Component {
         </Button.Group>
       ),
       {
+        title: "More",
         width: "1%",
         className: "text-nowrap",
       }
@@ -66,6 +80,7 @@ class AppsList extends React.Component {
         );
       },
       {
+        title: "Action",
         width: "1%",
         className: "text-nowrap p-l-0",
         isAvailable: () => currentUser.isAdmin,
@@ -105,7 +120,7 @@ class AppsList extends React.Component {
             <ItemsTable
               items={controller.pageItems}
               columns={this.listColumns}
-              showHeader={false}
+              showHeader={true}
               context={this.actions}
               orderByField={controller.orderByField}
               orderByReverse={controller.orderByReverse}
@@ -130,7 +145,7 @@ const AppsListPage = wrapSettingsTab(
   "Apps.List",
   {
     permission: "list_users",
-    title: "Apps",
+    title: "Application",
     path: "apps",
     order: 2,
   },
@@ -154,7 +169,7 @@ routes.register(
   "Apps.List",
   routeWithUserSession({
     path: "/apps",
-    title: "Apps",
+    title: "Application",
     render: pageProps => <AppsListPage {...pageProps} currentPage="groups" />,
   })
 );
