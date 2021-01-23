@@ -41,18 +41,11 @@ class AppsList extends React.Component {
         width: null,
       }
     ),
-    Columns.custom(
-      (text, app) => (
-        <div>
-          {app.active ? "Actived" : "Deactived"}={app.description}
-        </div>
-      ),
-      {
-        title: "Status",
-        field: "active",
-        width: null,
-      }
-    ),
+    Columns.custom((text, app) => <div>{app.active ? "Actived" : "Deactived"}</div>, {
+      title: "Status",
+      field: "active",
+      width: null,
+    }),
     Columns.custom(
       (text, app) => (
         <Button.Group>
