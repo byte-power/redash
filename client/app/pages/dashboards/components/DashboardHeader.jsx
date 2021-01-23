@@ -114,6 +114,7 @@ function DashboardMoreOptionsButton({ dashboardOptions }) {
     setEditingLayout,
     togglePublished,
     archiveDashboard,
+    manageApplicatins,
     managePermissions,
     gridDisabled,
     isDashboardOwnerOrAdmin,
@@ -137,6 +138,9 @@ function DashboardMoreOptionsButton({ dashboardOptions }) {
       placement="bottomRight"
       overlay={
         <Menu data-test="DashboardMoreButtonMenu">
+          <Menu.Item>
+              <a onClick={manageApplicatins}>Manage Applications</a>
+          </Menu.Item>
           <Menu.Item className={cx({ hidden: gridDisabled })}>
             <a onClick={() => setEditingLayout(true)}>Edit</a>
           </Menu.Item>
