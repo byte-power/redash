@@ -28,18 +28,16 @@ function useGrantees(url) {
   }, [url]);
 
   const addPermission = useCallback(
-    (userId, accessType = "modify") =>
+    appId =>
       axios
-        .post(url, { access_type: accessType, user_id: userId })
-        .catch(() => notification.error("Could not grant permission to the user")),
+        .post(url, { application_id: appId })
+        .catch(() => notification.error("Could not grant permission to the app")),
     [url]
   );
 
   const removePermission = useCallback(
-    (userId, accessType = "modify") =>
-      axios
-        .delete(url, { data: { access_type: accessType, user_id: userId } })
-        .catch(() => notification.error("Could not remove permission from the user")),
+    appId =>
+      axios.delete(url + "/" + appId, {}).catch(() => notification.error("Could not remove permission from the app")),
     [url]
   );
 
@@ -48,7 +46,15 @@ function useGrantees(url) {
 
 const searchApps = searchTerm =>
   Application.query({ q: searchTerm })
-    .then(({ results }) => results)
+    .then(results => {
+      if (!searchTerm) {
+        return [];
+      }
+      let available = results.filter(app => {
+        return app.active && app.name.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1;
+      });
+      return available;
+    })
     .catch(() => []);
 
 function AppEditorDialogHeader({ context }) {
@@ -63,7 +69,7 @@ function AppEditorDialogHeader({ context }) {
 AppEditorDialogHeader.propTypes = { context: PropTypes.oneOf(["query", "dashboard"]) };
 AppEditorDialogHeader.defaultProps = { context: "query" };
 
-function AppSelect({ onSelect, shouldShowUser }) {
+function AppSelect({ onSelect, shouldShowApp }) {
   const [loadingApps, setLoadingApps] = useState(true);
   const [apps, setApps] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -96,9 +102,9 @@ function AppSelect({ onSelect, shouldShowUser }) {
       value={undefined}
       getPopupContainer={trigger => trigger.parentNode}
       onSelect={onSelect}>
-      {apps.filter(shouldShowUser).map(user => (
-        <Option key={user.id} value={user.id}>
-          <AppPreviewCard app={user} />
+      {apps.filter(shouldShowApp).map(app => (
+        <Option key={app.id} value={app.id}>
+          <AppPreviewCard app={app} />
         </Option>
       ))}
     </Select>
@@ -107,32 +113,35 @@ function AppSelect({ onSelect, shouldShowUser }) {
 
 AppSelect.propTypes = {
   onSelect: PropTypes.func,
-  shouldShowUser: PropTypes.func,
+  shouldShowApp: PropTypes.func,
 };
-AppSelect.defaultProps = { onSelect: () => {}, shouldShowUser: () => true };
+AppSelect.defaultProps = { onSelect: () => {}, shouldShowApp: () => true };
 
-function AppEditorDialog({ dialog, author, context, aclUrl }) {
+function AppEditorDialog({ dialog, context, aclUrl }) {
   const [loadingGrantees, setLoadingGrantees] = useState(true);
   const [grantees, setGrantees] = useState([]);
   const { loadGrantees, addPermission, removePermission } = useGrantees(aclUrl);
-  const loadUsersWithPermissions = useCallback(() => {
+  const loadAppsWithPermissions = useCallback(() => {
     setLoadingGrantees(true);
     loadGrantees()
       .then(result => {
         setGrantees(result);
       })
-      .catch(() => notification.error("Failed to load grantees list"))
+      .catch(() => notification.error("Failed to load app list"))
       .finally(() => setLoadingGrantees(false));
   }, [loadGrantees]);
 
-  const userHasPermission = useCallback(
-    user => user.id === author.id || !!get(find(grantees, { id: user.id }), "accessType"),
-    [author.id, grantees]
+  const appHasPermission = useCallback(
+    app => {
+      let has = find(grantees, { id: app.id });
+      return !!has;
+    },
+    [grantees]
   );
 
   useEffect(() => {
-    loadUsersWithPermissions();
-  }, [aclUrl, loadUsersWithPermissions]);
+    loadAppsWithPermissions();
+  }, [aclUrl, loadAppsWithPermissions]);
 
   return (
     <Modal
@@ -140,10 +149,10 @@ function AppEditorDialog({ dialog, author, context, aclUrl }) {
       className="permissions-editor-dialog"
       title={<AppEditorDialogHeader context={context} />}
       footer={<Button onClick={dialog.dismiss}>Close</Button>}>
-      {/* <AppSelect
-        onSelect={userId => addPermission(userId).then(loadUsersWithPermissions)}
-        shouldShowUser={user => !userHasPermission(user)}
-      /> */}
+      <AppSelect
+        onSelect={appId => addPermission(appId).then(loadAppsWithPermissions)}
+        shouldShowApp={app => !appHasPermission(app)}
+      />
       <div className="d-flex align-items-center m-t-5">
         <h5 className="flex-fill">Application with permissions</h5>
         {loadingGrantees && <i className="fa fa-spinner fa-pulse" />}
@@ -158,7 +167,7 @@ function AppEditorDialog({ dialog, author, context, aclUrl }) {
                 <Tooltip title="Remove app permissions">
                   <i
                     className="fa fa-remove clickable"
-                    onClick={() => removePermission(app.id).then(loadUsersWithPermissions)}
+                    onClick={() => removePermission(app.id).then(loadAppsWithPermissions)}
                   />
                 </Tooltip>
               </AppPreviewCard>
@@ -172,7 +181,6 @@ function AppEditorDialog({ dialog, author, context, aclUrl }) {
 
 AppEditorDialog.propTypes = {
   dialog: DialogPropType.isRequired,
-  author: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
   context: PropTypes.oneOf(["query", "dashboard"]),
   aclUrl: PropTypes.string.isRequired,
 };
