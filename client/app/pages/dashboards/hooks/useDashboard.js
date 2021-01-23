@@ -59,7 +59,6 @@ function useDashboard(dashboardData) {
     AppEditorDialog.showModal({
       aclUrl,
       context: "dashboard",
-      author: dashboard.user,
     });
   }, [dashboard]);
 
