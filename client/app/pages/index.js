@@ -18,6 +18,8 @@ import "./data-sources/EditDataSource";
 import "./destinations/DestinationsList";
 import "./destinations/EditDestination";
 
+import "./apps/AppList";
+
 import "./groups/GroupsList";
 import "./groups/GroupDataSources";
 import "./groups/GroupMembers";

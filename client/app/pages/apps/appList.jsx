@@ -14,8 +14,8 @@ import LoadingState from "@/components/items-list/components/LoadingState";
 import EmptyState from "@/components/items-list/components/EmptyState";
 import ItemsTable, { Columns } from "@/components/items-list/components/ItemsTable";
 
-import CreateGroupDialog from "@/components/groups/CreateGroupDialog";
-import DeleteGroupButton from "@/components/groups/DeleteGroupButton";
+import CreateAppDialog from "@/components/apps/CreateAppDialog";
+import DeleteAppButton from "@/components/apps/DeleteAppButton";
 import wrapSettingsTab from "@/components/SettingsWrapper";
 
 import Application from "@/services/application";
@@ -29,10 +29,10 @@ class AppsList extends React.Component {
 
   listColumns = [
     Columns.custom(
-      (text, group) => (
+      (text, app) => (
         <div>
-          <Link href={"groups/" + group.id}>{group.name}</Link>
-          {group.type === "builtin" && <span className="label label-default m-l-10">built-in</span>}
+          <Link href={"apps/" + app.id}>{app.name}</Link>
+          {app.type === "builtin" && <span className="label label-default m-l-10">built-in</span>}
         </div>
       ),
       {
@@ -41,10 +41,9 @@ class AppsList extends React.Component {
       }
     ),
     Columns.custom(
-      (text, group) => (
+      (text, app) => (
         <Button.Group>
-          <Link.Button href={`groups/${group.id}`}>Members</Link.Button>
-          {currentUser.isAdmin && <Link.Button href={`groups/${group.id}/data_sources`}>Data Sources</Link.Button>}
+          <Link.Button href={`apps/${app.id}`}>Dashboards</Link.Button>
         </Button.Group>
       ),
       {
@@ -53,17 +52,17 @@ class AppsList extends React.Component {
       }
     ),
     Columns.custom(
-      (text, group) => {
-        const canRemove = group.type !== "builtin";
+      (text, app) => {
+        const canRemove = app.type !== "builtin";
         return (
-          <DeleteGroupButton
+          <DeleteAppButton
             className="w-100"
             disabled={!canRemove}
-            group={group}
-            title={canRemove ? null : "Cannot delete built-in group"}
-            onClick={() => this.onGroupDeleted()}>
+            app={app}
+            title={canRemove ? null : "Cannot delete built-in app"}
+            onClick={() => this.onAppDeleted()}>
             Delete
-          </DeleteGroupButton>
+          </DeleteAppButton>
         );
       },
       {
@@ -74,13 +73,13 @@ class AppsList extends React.Component {
     ),
   ];
 
-  createGroup = () => {
-    CreateGroupDialog.showModal().onClose(app =>
+  createApp = () => {
+    CreateAppDialog.showModal().onClose(app =>
       Application.create(app).then(newApp => navigateTo(`application/${newApp.id}`))
     );
   };
 
-  onGroupDeleted = () => {
+  onAppDeleted = () => {
     this.props.controller.updatePagination({ page: 1 });
     this.props.controller.update();
   };
@@ -92,7 +91,7 @@ class AppsList extends React.Component {
       <div data-test="GroupList">
         {currentUser.isAdmin && (
           <div className="m-b-15">
-            <Button type="primary" onClick={this.createGroup}>
+            <Button type="primary" onClick={this.createApp}>
               <i className="fa fa-plus m-r-5" />
               New App
             </Button>
@@ -133,7 +132,7 @@ const AppsListPage = wrapSettingsTab(
     permission: "list_users",
     title: "Apps",
     path: "apps",
-    order: 3,
+    order: 2,
   },
   itemsList(
     AppsList,
