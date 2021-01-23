@@ -6,7 +6,6 @@ import Button from "antd/lib/button";
 import List from "antd/lib/list";
 import Modal from "antd/lib/modal";
 import Select from "antd/lib/select";
-import Tag from "antd/lib/tag";
 import Tooltip from "antd/lib/tooltip";
 import { wrap as wrapDialog, DialogPropType } from "@/components/DialogWrapper";
 import { AppPreviewCard } from "@/components/PreviewCard";
