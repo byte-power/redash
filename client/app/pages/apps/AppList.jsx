@@ -91,7 +91,7 @@ class AppsList extends React.Component {
 
   createApp = () => {
     CreateAppDialog.showModal().onClose(app =>
-      Application.create(app).then(newApp => navigateTo(`application/${newApp.id}`))
+      Application.create(app).then(newApp => navigateTo(`apps/${newApp.id}`))
     );
   };
 

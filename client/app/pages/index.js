@@ -19,6 +19,7 @@ import "./destinations/DestinationsList";
 import "./destinations/EditDestination";
 
 import "./apps/AppList";
+import "./apps/AppDetail";
 
 import "./groups/GroupsList";
 import "./groups/GroupDataSources";
