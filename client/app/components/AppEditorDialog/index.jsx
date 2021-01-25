@@ -44,9 +44,6 @@ function useGrantees(url) {
 const searchApps = searchTerm =>
   Application.query({ q: searchTerm })
     .then(results => {
-      if (!searchTerm) {
-        return [];
-      }
       let available = results.filter(app => {
         return app.active && app.name.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1;
       });

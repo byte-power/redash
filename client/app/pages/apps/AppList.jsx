@@ -42,18 +42,11 @@ class AppsList extends React.Component {
         width: null,
       }
     ),
-    Columns.custom(
-      (text, app) => (
-        <div>
-          <Tag className="tag">{app.active ? "Actived" : "Deactived"}</Tag>
-        </div>
-      ),
-      {
-        title: "Status",
-        field: "active",
-        width: null,
-      }
-    ),
+    Columns.custom((text, app) => <div>{app.description}</div>, {
+      title: "Description",
+      field: "description",
+      width: null,
+    }),
     Columns.custom(
       (text, app) => (
         <Button.Group>
@@ -61,7 +54,7 @@ class AppsList extends React.Component {
         </Button.Group>
       ),
       {
-        title: "More",
+        title: "",
         width: "1%",
         className: "text-nowrap",
       }
@@ -81,7 +74,7 @@ class AppsList extends React.Component {
         );
       },
       {
-        title: "Action",
+        title: "",
         width: "1%",
         className: "text-nowrap p-l-0",
         isAvailable: () => currentUser.isAdmin,
@@ -90,9 +83,7 @@ class AppsList extends React.Component {
   ];
 
   createApp = () => {
-    CreateAppDialog.showModal().onClose(app =>
-      Application.create(app).then(newApp => navigateTo(`apps/${newApp.id}`))
-    );
+    CreateAppDialog.showModal().onClose(app => Application.create(app).then(newApp => navigateTo(`apps/${newApp.id}`)));
   };
 
   onAppDeleted = () => {

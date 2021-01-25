@@ -109,7 +109,7 @@ class AppDashboards extends React.Component {
         ),
       }),
     }).onClose(items => {
-      const promises = map(items, u => Application.addDashboard({ id: this.appId }, { dashboards_id: u.id }));
+      const promises = map(items, u => Application.addDashboard({ id: this.appId }, { dashboard_id: u.id }));
       return Promise.all(promises).then(() => this.props.controller.update());
     });
   };
@@ -118,7 +118,7 @@ class AppDashboards extends React.Component {
     const { controller } = this.props;
     return (
       <div data-test="Group">
-        <h3>{this.app && this.app.name}</h3>
+        <h4>{this.app && this.app.name}</h4>
         <Layout>
           <Layout.Content>
             {currentUser.isAdmin && (
