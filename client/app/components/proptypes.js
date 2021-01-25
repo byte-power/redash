@@ -37,6 +37,7 @@ export const AppDetail = PropTypes.shape({
   icon_url: PropTypes.string,
   description: PropTypes.string,
   secret_key: PropTypes.string,
+  secret_token: PropTypes.string,
   active: PropTypes.bool,
 });
 

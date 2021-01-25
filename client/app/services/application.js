@@ -7,47 +7,46 @@ function getErrorMessage(error) {
   return find([get(error, "response.data.message"), get(error, "response.statusText"), "Unknown error"], isString);
 }
 
-function disableResource(user) {
-  return `api/applications/${user.id}`;
+function disableResource(app) {
+  return `api/applications/${app.id}`;
 }
 
-function enableApplication(user) {
-  const userName = sanitize(user.name);
-
+function enableApplication(app) {
+  const appName = sanitize(app.name);
   return axios
-    .delete(disableResource(user))
+    .post(disableResource(app), {
+      active: true,
+    })
     .then(data => {
-      notification.success(`App ${userName} is now enabled.`);
-      user.is_disabled = false;
-      user.profile_image_url = data.profile_image_url;
+      notification.success(`App ${appName} is now actived.`);
       return data;
     })
     .catch(error => {
-      notification.error("Cannot enable app", getErrorMessage(error));
+      notification.error("Cannot active app", getErrorMessage(error));
     });
 }
 
-function disableApplication(user) {
-  const userName = sanitize(user.name);
+function disableApplication(app) {
+  const appName = sanitize(app.name);
   return axios
-    .post(disableResource(user))
+    .post(disableResource(app), {
+      active: false,
+    })
     .then(data => {
-      notification.warning(`App ${userName} is now disabled.`);
-      user.is_disabled = true;
-      user.profile_image_url = data.profile_image_url;
+      notification.warning(`App ${appName} is now deactived.`);
       return data;
     })
     .catch(error => {
-      notification.error("Cannot disable app", getErrorMessage(error));
+      notification.error("Cannot deactive app", getErrorMessage(error));
     });
 }
 
-function deleteApplication(user) {
-  const userName = sanitize(user.name);
+function deleteApplication(app) {
+  const appName = sanitize(app.name);
   return axios
-    .delete(`api/applications/${user.id}`)
+    .delete(disableResource(app))
     .then(data => {
-      notification.warning(`App ${userName} has been deleted.`);
+      notification.warning(`App ${appName} has been deleted.`);
       return data;
     })
     .catch(error => {
@@ -55,12 +54,12 @@ function deleteApplication(user) {
     });
 }
 
-function regenerateApiKey(user) {
+function regenerateApiKey(app) {
   return axios
-    .post(`api/applications/${user.id}/regenerate_secret_token`)
+    .post(`api/applications/${app.id}/regenerate_secret_token`)
     .then(data => {
       notification.success("The secret token has been updated.");
-      return data.api_key;
+      return data.secret_token;
     })
     .catch(error => {
       notification.error("Failed regenerating secret token", getErrorMessage(error));

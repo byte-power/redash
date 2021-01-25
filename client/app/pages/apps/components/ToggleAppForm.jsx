@@ -14,7 +14,7 @@ export default function ToggleAppForm(props) {
   const handleChange = useImmutableCallback(onChange);
 
   const toggleApp = useCallback(() => {
-    const action = app.isDisabled ? Application.enableApplication : Application.disableApplication;
+    const action = app.active ? Application.disableApplication : Application.enableApplication;
     setLoading(true);
     action(app)
       .then(data => {
@@ -32,8 +32,8 @@ export default function ToggleAppForm(props) {
   }
 
   const buttonProps = {
-    type: app.isDisabled ? "primary" : "danger",
-    children: app.isDisabled ? "Enable App" : "Disable App",
+    type: app.active ? "danger" : "primary",
+    children: app.active ? "Disable App" : "Enable App",
   };
 
   return (

@@ -21,7 +21,7 @@ export default function ApiKeyForm(props) {
       Application.regenerateApiKey(app)
         .then(apiKey => {
           if (apiKey) {
-            handleChange({ ...app, apiKey });
+            handleChange({ ...app, secret_token: apiKey });
           }
         })
         .finally(() => {
