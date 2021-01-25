@@ -15,8 +15,7 @@ function deleteApp(event, app, onAppDeleted) {
     okType: "danger",
     cancelText: "No",
     onOk: () => {
-      Application.delete(app).then(() => {
-        notification.success("App deleted successfully.");
+      Application.deleteApplication(app).then(() => {
         onAppDeleted();
       });
     },
