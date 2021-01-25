@@ -1,6 +1,7 @@
 import React from "react";
 
 import Button from "antd/lib/button";
+import Tag from "antd/lib/tag";
 import routeWithUserSession from "@/components/ApplicationArea/routeWithUserSession";
 import Link from "@/components/Link";
 import navigateTo from "@/components/ApplicationArea/navigateTo";
@@ -14,8 +15,8 @@ import LoadingState from "@/components/items-list/components/LoadingState";
 import EmptyState from "@/components/items-list/components/EmptyState";
 import ItemsTable, { Columns } from "@/components/items-list/components/ItemsTable";
 
-import CreateAppDialog from "@/components/apps/CreateAppDialog";
-import DeleteAppButton from "@/components/apps/DeleteAppButton";
+import CreateAppDialog from "./components/CreateAppDialog";
+import DeleteAppButton from "./components/DeleteAppButton";
 import wrapSettingsTab from "@/components/SettingsWrapper";
 
 import Application from "@/services/application";
@@ -41,11 +42,18 @@ class AppsList extends React.Component {
         width: null,
       }
     ),
-    Columns.custom((text, app) => <div>{app.active ? "Actived" : "Deactived"}</div>, {
-      title: "Status",
-      field: "active",
-      width: null,
-    }),
+    Columns.custom(
+      (text, app) => (
+        <div>
+          <Tag className="tag">{app.active ? "Actived" : "Deactived"}</Tag>
+        </div>
+      ),
+      {
+        title: "Status",
+        field: "active",
+        width: null,
+      }
+    ),
     Columns.custom(
       (text, app) => (
         <Button.Group>
