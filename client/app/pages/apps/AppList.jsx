@@ -57,7 +57,7 @@ class AppsList extends React.Component {
     Columns.custom(
       (text, app) => (
         <Button.Group>
-          <Link.Button href={`apps/${app.id}`}>Dashboards</Link.Button>
+          <Link.Button href={`apps/${app.id}/dashboard`}>Dashboards</Link.Button>
         </Button.Group>
       ),
       {

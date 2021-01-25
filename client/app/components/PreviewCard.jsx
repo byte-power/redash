@@ -87,6 +87,25 @@ AppPreviewCard.propTypes = {
   children: PropTypes.node,
 };
 
+// DashboardPreviewCard
+
+export function DashboardPreviewCard({ dashboard, withLink, children, ...props }) {
+  const title = withLink ? <Link href={"dashboard/" + dashboard.id}>{dashboard.name}</Link> : dashboard.name;
+  return (
+    <PreviewCard {...props} title={title}>
+      {children}
+    </PreviewCard>
+  );
+}
+
+DashboardPreviewCard.propTypes = {
+  dashboard: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+  }).isRequired,
+  withLink: PropTypes.bool,
+  children: PropTypes.node,
+};
+
 // DataSourcePreviewCard
 
 export function DataSourcePreviewCard({ dataSource, withLink, children, ...props }) {

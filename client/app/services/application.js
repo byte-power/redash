@@ -75,6 +75,9 @@ const Application = {
   disableApplication,
   deleteApplication,
   regenerateApiKey,
+  dashboards: ({ id }) => axios.get(`api/applications/${id}/dashboards`),
+  addDashboard: ({ id }, data) => axios.post(`api/applications/${id}/dashboards`, data),
+  removeDashboard: ({ id, dashboardId }) => axios.delete(`api/applications/${id}/dashboards/${dashboardId}`),
 };
 
 export default Application;
