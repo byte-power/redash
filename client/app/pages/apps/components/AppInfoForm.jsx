@@ -56,7 +56,7 @@ export default function AppInfoForm(props) {
             initialValue: app.description,
           },
         ],
-        field => ({ readOnly: true, ...field })
+        field => field
       ),
     [app]
   );

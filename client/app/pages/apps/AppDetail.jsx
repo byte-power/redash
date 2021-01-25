@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 import routeWithUserSession from "@/components/ApplicationArea/routeWithUserSession";
-import EmailSettingsWarning from "@/components/EmailSettingsWarning";
 import DynamicComponent from "@/components/DynamicComponent";
 import LoadingState from "@/components/items-list/components/LoadingState";
 import wrapSettingsTab from "@/components/SettingsWrapper";
@@ -26,7 +25,6 @@ function AppDetail({ appId, onError }) {
     let isCancelled = false;
     Application.get({ id: appId })
       .then(app => {
-        console.log(29, app);
         if (!isCancelled) {
           setApp(app);
         }
@@ -45,7 +43,6 @@ function AppDetail({ appId, onError }) {
   const canEdit = app && currentUser.isAdmin;
   return (
     <React.Fragment>
-      <EmailSettingsWarning featureName="invite emails" className="m-b-20" adminOnly />
       <div className="row">
         {!app && <LoadingState className="" />}
         {app && (
@@ -65,7 +62,7 @@ AppDetail.propTypes = {
 };
 
 AppDetail.defaultProps = {
-  appId: null, // defaults to `currentUser.id`
+  appId: null,
   onError: () => {},
 };
 

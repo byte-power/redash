@@ -3,7 +3,7 @@ import { AppDetail } from "@/components/proptypes";
 
 import AppInfoForm from "./AppInfoForm";
 import ApiKeyForm from "./ApiKeyForm";
-import ToggleUserForm from "./ToggleUserForm";
+import ToggleAppForm from "./ToggleAppForm";
 
 export default function EditableAppDetail(props) {
   const [app, setApp] = useState(props.app);
@@ -14,7 +14,6 @@ export default function EditableAppDetail(props) {
 
   return (
     <div className="col-md-4 col-md-offset-4">
-      <img alt="Profile" src={app.profileImageUrl} className="profile__image" width="40" />
       <h3 className="profile__h3">{app.name}</h3>
       <hr />
       <AppInfoForm app={app} onChange={setApp} />
@@ -24,7 +23,7 @@ export default function EditableAppDetail(props) {
         </React.Fragment>
       )}
       <hr />
-      <ToggleUserForm app={app} onChange={setApp} />
+      <ToggleAppForm app={app} onChange={setApp} />
     </div>
   );
 }

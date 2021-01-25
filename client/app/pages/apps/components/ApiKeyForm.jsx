@@ -30,7 +30,7 @@ export default function ApiKeyForm(props) {
     };
 
     Modal.confirm({
-      title: "Regenerate API Key",
+      title: "Regenerate Secret Token",
       content: "Are you sure you want to regenerate?",
       okText: "Regenerate",
       onOk: doRegenerate,
@@ -43,8 +43,8 @@ export default function ApiKeyForm(props) {
     <DynamicComponent name="AppDetail.ApiKeyForm" {...props}>
       <Form layout="vertical">
         <hr />
-        <Form.Item label="API Key" className="m-b-10">
-          <InputWithCopy id="apiKey" className="hide-in-percy" value={app.apiKey} data-test="ApiKey" readOnly />
+        <Form.Item label="Secret Token" className="m-b-10">
+          <InputWithCopy id="apiKey" className="hide-in-percy" value={app.secret_token} data-test="ApiKey" readOnly />
         </Form.Item>
         <Button className="w-100" onClick={regenerateApiKey} loading={loading} data-test="RegenerateApiKey">
           Regenerate
