@@ -390,7 +390,7 @@ const QueryService = {
   resultById: data => axios.get(`api/queries/${data.id}/results.json`),
   asDropdown: data => axios.get(`api/queries/${data.id}/dropdown`),
   associatedDropdown: ({ queryId, dropdownQueryId }) =>
-    axios.get(`api/queries/${queryId}/dropdowns/${dropdownQueryId}?access_token=123`),
+    axios.get(`api/queries/${queryId}/dropdowns/${dropdownQueryId}`),
   favorites: params => axios.get("api/queries/favorites", { params }).then(mapResults),
   favorite: data => axios.post(`api/queries/${data.id}/favorite`),
   unfavorite: data => axios.delete(`api/queries/${data.id}/favorite`),

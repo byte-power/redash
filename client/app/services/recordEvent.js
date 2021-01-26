@@ -7,7 +7,7 @@ const post = debounce(() => {
   const eventsToSend = events;
   events = [];
 
-  axios.post("api/events?access_token=123", eventsToSend);
+  axios.post("api/events", eventsToSend);
 }, 1000);
 
 export default function recordEvent(action, objectType, objectId, additionalProperties) {
