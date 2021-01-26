@@ -32,7 +32,7 @@ class AppsList extends React.Component {
     Columns.custom(
       (text, app) => (
         <div>
-          <Link href={"apps/" + app.id}>{app.name}</Link>
+          <Link href={"apps/" + app.id}>{text}</Link>
           {app.type === "builtin" && <span className="label label-default m-l-10">built-in</span>}
         </div>
       ),
@@ -42,7 +42,7 @@ class AppsList extends React.Component {
         width: null,
       }
     ),
-    Columns.custom((text, app) => <div>{app.description}</div>, {
+    Columns.custom((text, app) => <div>{text}</div>, {
       title: "Description",
       field: "description",
       width: null,

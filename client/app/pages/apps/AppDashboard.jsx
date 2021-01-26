@@ -34,7 +34,7 @@ class AppDashboards extends React.Component {
   app = null;
 
   listColumns = [
-    Columns.custom((text, user) => <div>{user.name}</div>, {
+    Columns.custom((text, user) => <div>{text}</div>, {
       title: "Name",
       field: "name",
       width: null,
