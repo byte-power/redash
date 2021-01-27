@@ -15,7 +15,9 @@ ACCESS_TYPES = (ACCESS_TYPE_VIEW, ACCESS_TYPE_MODIFY, ACCESS_TYPE_DELETE)
 
 
 def has_access(obj, user, need_view_only):
-    if hasattr(obj, "api_key") and user.is_api_user():
+    if user.is_embed:
+        return need_view_only
+    elif hasattr(obj, "api_key") and user.is_api_user():
         return has_access_to_object(obj, user.id, need_view_only)
     else:
         return has_access_to_groups(obj, user, need_view_only)

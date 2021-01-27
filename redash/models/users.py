@@ -124,6 +124,10 @@ class User(
     def is_disabled(self):
         return self.disabled_at is not None
 
+    @property
+    def is_embed(self):
+        return False
+
     def disable(self):
         self.disabled_at = db.func.now()
 
@@ -270,6 +274,7 @@ class Group(db.Model, BelongsToOrgMixin):
         "list_dashboards",
         "list_alerts",
         "list_data_sources",
+        "list_applications",
     ]
 
     BUILTIN_GROUP = "builtin"
@@ -402,9 +407,10 @@ class AnonymousUser(AnonymousUserMixin, PermissionsCheckMixin):
 
 
 class ApiUser(UserMixin, PermissionsCheckMixin):
-    def __init__(self, api_key, org, groups, name=None):
+    def __init__(self, api_key, org, groups, name=None, embed=False):
         self.object = None
-        if isinstance(api_key, str):
+        if type(api_key) in (str, int):
+        #if isinstance(api_key, str):
             self.id = api_key
             self.name = name
         else:
@@ -413,6 +419,7 @@ class ApiUser(UserMixin, PermissionsCheckMixin):
             self.object = api_key.object
         self.group_ids = groups
         self.org = org
+        self.is_embed = embed
 
     def __repr__(self):
         return "<{}>".format(self.name)
@@ -428,7 +435,7 @@ class ApiUser(UserMixin, PermissionsCheckMixin):
 
     @property
     def permissions(self):
-        return ["view_query"]
+        return ["view_query", "list_applications"]
 
     def has_access(self, obj, access_type):
         return False

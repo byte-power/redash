@@ -2,7 +2,7 @@ from tests import BaseTestCase
 
 from redash.models import ApiKey, Dashboard, AccessPermission, db
 from redash.permissions import ACCESS_TYPE_MODIFY
-from redash.serializers import serialize_dashboard
+from redash.serializers import serialize_dashboard, public_dashboard
 from redash.utils import json_loads
 
 
@@ -172,6 +172,28 @@ class TestDashboardResourceDelete(BaseTestCase):
         d = Dashboard.get_by_id_and_org(d.id, d.org)
         self.assertTrue(d.is_archived)
 
+class TestDashboardEmbedGet(BaseTestCase):
+    def test_success(self):
+        d1 = self.factory.create_dashboard()
+        access_token = self.factory.create_access_token()
+        rv = self.make_request(
+            "get",
+            "/api/dashboards/embed/{}?access_token={}".format(d1.id, access_token),
+        )
+        self.assertEqual(rv.status_code, 200)
+
+        expected = public_dashboard(d1)
+        actual = json_loads(rv.data)
+
+        self.assertResponseEqual(expected, actual)
+
+    def test_get_invalid_access_token(self):
+        d1 = self.factory.create_dashboard()
+        rv = self.make_request(
+            "get",
+            "/api/dashboards/embed/{}?access_token={}".format(d1.id, "0123456789"),
+        )
+        self.assertEqual(rv.status_code, 401)
 
 class TestDashboardShareResourcePost(BaseTestCase):
     def test_creates_api_key(self):
