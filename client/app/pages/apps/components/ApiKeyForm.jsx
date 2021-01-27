@@ -43,6 +43,9 @@ export default function ApiKeyForm(props) {
     <DynamicComponent name="AppDetail.ApiKeyForm" {...props}>
       <Form layout="vertical">
         <hr />
+        <Form.Item label="Secret Key" className="m-b-10">
+          <InputWithCopy className="hide-in-percy" value={app.secret_key} readOnly />
+        </Form.Item>
         <Form.Item label="Secret Token" className="m-b-10">
           <InputWithCopy id="apiKey" className="hide-in-percy" value={app.secret_token} data-test="ApiKey" readOnly />
         </Form.Item>

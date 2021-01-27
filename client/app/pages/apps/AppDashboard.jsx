@@ -185,6 +185,6 @@ routes.register(
   routeWithUserSession({
     path: "/apps/:appId/dashboard",
     title: "Apps Dashboards",
-    render: pageProps => <AppDashboardPage {...pageProps} currentPage="users" />,
+    render: pageProps => <AppDashboardPage {...pageProps} />,
   })
 );
