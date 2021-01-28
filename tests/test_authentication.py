@@ -196,7 +196,46 @@ class TestApplicationAuthentication(BaseTestCase):
         path = "{}&signature={}".format(url, signature)
         with self.app.test_client() as c:
             rv = c.get(path)
-            self.assertIsNone(api_key_load_user_from_request(request))
+            try:
+                user = api_key_load_user_from_request(request)
+            except Unauthorized as e:
+                self.assertEqual(type(e), Unauthorized)
+            else:
+                self.assertTrue(False)
+
+    def test_no_secret_key(self):
+        timestamp = int(time.time())
+        params = {
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
+        signature = get_embed_signature(self.application.secret_token, url, timestamp)
+        path = "{}&signature={}".format(url, signature)
+        with self.app.test_client() as c:
+            rv = c.get(path)
+            try:
+                user = api_key_load_user_from_request(request)
+            except Unauthorized as e:
+                self.assertEqual(type(e), Unauthorized)
+            else:
+                self.assertTrue(False)
+
+    def test_no_secret_key_and_signature(self):
+        timestamp = int(time.time())
+        params = {
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
+        with self.app.test_client() as c:
+            rv = c.get(url)
+            try:
+                user = api_key_load_user_from_request(request)
+            except Unauthorized as e:
+                self.assertEqual(type(e), Unauthorized)
+            else:
+                self.assertTrue(False)
 
     def test_application_wrong_api_serect(self):
         timestamp = int(time.time())
