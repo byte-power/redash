@@ -2,7 +2,8 @@ import hashlib
 import hmac
 import logging
 import time
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urlsplit, urlunsplit, urlparse, parse_qs, quote
+import collections
 
 from flask import jsonify, redirect, request, url_for
 from flask_login import LoginManager, login_user, logout_user, user_logged_in
@@ -87,7 +88,7 @@ def hmac_load_user_from_request(request):
     else:
         signature = request.args.get("signature", None)
         # embed url request
-        if signature and "/embed/dashboard" in request.path:
+        if "/embed/dashboard" in request.path:
             secret_key = request.args.get("secret_key", None)
             user = get_user_from_secret_key(secret_key, signature, request)
             return user
@@ -163,16 +164,35 @@ def get_api_key_from_request(request):
         api_key = request.view_args["token"]
     return api_key
 
+def encode_params(params):
+    order_params = collections.OrderedDict(sorted(params.items()))
+    query = list(order_params.items())
+    l = []
+    for k, v in query:
+        k = quote(str(k))
+        if isinstance(v, str):
+            v = v.encode('utf8')
+        v = quote(v)
+        l.append(k + '=' + v)
+    return "&".join(l)
+
+def get_want_to_signature_url(url):
+    o = urlparse(url)
+    params_list = parse_qs(o.query, keep_blank_values=True)
+    params = {k: v[0] for k, v in params_list.items()}
+    params.pop("signature", None)
+    s = encode_params(params)
+    host = "".join([o.scheme, "://", o.netloc, o.path])
+    want_to_signature_url = "?".join([host, s])
+    return want_to_signature_url
 
 def get_embed_signature(secret_token, url, timestamp):
     request_method = "GET"
     content_type = ""
     content_constant = "1B2M2Y8AsgTpgAmY7PhCfg=="
-    signature_url = url.split("&signature", 1)[0]
-    request_string = ','.join([request_method, content_type, content_constant, signature_url, str(timestamp)])
+    request_string = ','.join([request_method, content_type, content_constant, url, str(timestamp)])
     signature = hmac.new(secret_token.encode(), msg=request_string.encode(), digestmod=hashlib.sha256).hexdigest()
     return signature
-
 
 def check_embed_signature(secret_token, request, signature):
     now = int(time.time())
@@ -185,7 +205,8 @@ def check_embed_signature(secret_token, request, signature):
     if (timestamp + ttl <  now) or (timestamp - ttl > now):
         return False
 
-    s = get_embed_signature(secret_token, request.url, timestamp)
+    want_to_signature_url = get_want_to_signature_url(request.url)
+    s = get_embed_signature(secret_token, want_to_signature_url, timestamp)
     return s == signature
 
 def get_user_from_secret_key(secret_key, signature, request):
@@ -224,9 +245,9 @@ def api_key_load_user_from_request(request):
     if access_token and "/api" in request.path:
         user = get_user_from_access_token(access_token)
     else:
-        signature = request.args.get("signature", None)
         # embed url request
-        if signature and "/embed/dashboard" in request.path:
+        if "/embed/dashboard" in request.path:
+            signature = request.args.get("signature", None)
             secret_key = request.args.get("secret_key", None)
             user = get_user_from_secret_key(secret_key, signature, request)
         # original redash request

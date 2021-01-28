@@ -12,6 +12,7 @@ from redash.authentication import (
     hmac_load_user_from_request,
     sign,
     get_embed_signature,
+    encode_params,
 )
 from redash.authentication import create_and_login_user
 from redash.authentication.google_oauth import verify_profile as google_verify_profile
@@ -167,46 +168,46 @@ class TestApplicationAuthentication(BaseTestCase):
         self.dashboard = self.factory.create_dashboard()
         self.application = self.factory.create_application()
         models.db.session.flush()
-
-    '''
-    def test_signature(self):
-        api_key = "DAzHgfaizpMBl5xaVjN1KrKs"
-        secret_token = "82d7296d4634fbdee3044bec"
-        timestamp = 1607606602
-        url = "http://10.0.5.68:5000/embed/dashboard/1?secret_key=DAzHgfaizpMBl5xaVjN1KrKs&p_app_id=A67986839&timestamp=1607606602"
-        signature = get_embed_signature(secret_token, url, timestamp)
-        self.assertTrue(False)
-    '''
+        self.basic_embed_url = "http://localhost/{}/embed/dashboard/{}".format(self.factory.org.slug, self.dashboard.id)
 
     def test_success(self):
         timestamp = int(time.time())
-        path = "/{}/embed/dashboard/{}?secret_key={}&timestamp={}" \
-            .format(self.factory.org.slug, self.dashboard.id, self.application.secret_key, timestamp)
-        url = "http://localhost{}".format(path)
+        params = {
+            "secret_key": self.application.secret_key,
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
         signature = get_embed_signature(self.application.secret_token, url, timestamp)
-        path = "{}&signature={}".format(path, signature)
+        path = "{}&signature={}".format(url, signature)
         with self.app.test_client() as c:
             rv = c.get(path)
             self.assertIsNotNone(api_key_load_user_from_request(request))
 
     def test_application_no_exist_api_key(self):
         timestamp = int(time.time())
-        path = "/{}/embed/dashboard/{}?secret_key={}&timestamp={}" \
-            .format(self.factory.org.slug, self.dashboard.id, "no-exsit-api-key", timestamp)
-        url = "http://localhost{}".format(path)
+        params = {
+            "secret_key": "no-exsit-api-key",
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
         signature = get_embed_signature(self.application.secret_token, url, timestamp)
-        path = "{}&signature={}".format(path, signature)
+        path = "{}&signature={}".format(url, signature)
         with self.app.test_client() as c:
             rv = c.get(path)
             self.assertIsNone(api_key_load_user_from_request(request))
 
     def test_application_wrong_api_serect(self):
         timestamp = int(time.time())
-        path = "/{}/embed/dashboard/{}?secret_key={}&timestamp={}" \
-            .format(self.factory.org.slug, self.dashboard.id, self.application.secret_key, timestamp)
-        url = "http://localhost{}".format(path)
+        params = {
+            "secret_key": self.application.secret_key,
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
         signature = get_embed_signature("wrong-application-api-serect", url, timestamp)
-        path = "{}&signature={}".format(path, signature)
+        path = "{}&signature={}".format(url, signature)
         with self.app.test_client() as c:
             rv = c.get(path)
             try:
@@ -219,11 +220,14 @@ class TestApplicationAuthentication(BaseTestCase):
     def test_application_deactive(self):
         application = self.factory.create_application(name='test_application_deactive', active=False)
         timestamp = int(time.time())
-        path = "/{}/embed/dashboard/{}?secret_key={}&timestamp={}" \
-            .format(self.factory.org.slug, self.dashboard.id, application.secret_key, timestamp)
-        url = "http://localhost{}".format(path)
+        params = {
+            "secret_key": application.secret_key,
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
         signature = get_embed_signature(application.secret_token, url, timestamp)
-        path = "{}&signature={}".format(path, signature)
+        path = "{}&signature={}".format(url, signature)
         with self.app.test_client() as c:
             rv = c.get(path)
             try:
