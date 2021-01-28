@@ -74,6 +74,10 @@ class TestEmbedDashboard(BaseTestCase):
         params = {
             "secret_key": self.application.secret_key,
             "timestamp": str(timestamp),
+            "max_age": "3600",
+            "p_countries": "['us', 'ke', 'en']",
+            "p_type": "游戏",
+            "p_time": "['2021年01月01日', '2022年12月31日']",
         }
         s = encode_params(params)
         url = "?".join([self.embed_url, s])
@@ -179,6 +183,25 @@ class TestEmbedDashboard(BaseTestCase):
         params = {
             "secret_key": application.secret_key,
             "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.embed_url, s])
+        signature = get_embed_signature(application.secret_token, self.basic_url+url, timestamp)
+        path = "{}&signature={}".format(url, signature)
+        res = self.make_request(
+            "get",
+            path,
+            is_json=False,
+        )
+        self.assertEqual(res.status_code, 401)
+
+    def test_no_timestamp(self):
+        application = self.factory.create_application(name="test_no_timestamp")
+        self.factory.create_application_dashboard(application_id=application.id, dashboard_id=self.dashboard.id)
+
+        timestamp = int(time.time())
+        params = {
+            "secret_key": application.secret_key,
         }
         s = encode_params(params)
         url = "?".join([self.embed_url, s])

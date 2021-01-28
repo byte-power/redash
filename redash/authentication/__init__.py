@@ -194,31 +194,34 @@ def get_embed_signature(secret_token, url, timestamp):
     signature = hmac.new(secret_token.encode(), msg=request_string.encode(), digestmod=hashlib.sha256).hexdigest()
     return signature
 
-def check_embed_signature(secret_token, request, signature):
-    now = int(time.time())
-    timestamp = request.args.get("timestamp", None)
-    if not timestamp:
-        return False
-
-    timestamp = int(timestamp)
-    ttl = int(org_settings["embed_urls_expired_seconds"])
-    if (timestamp + ttl <  now) or (timestamp - ttl > now):
-        return False
-
+def check_embed_signature(request, secret_token, timestamp, signature):
     want_to_signature_url = get_want_to_signature_url(request.url)
     s = get_embed_signature(secret_token, want_to_signature_url, timestamp)
     return s == signature
 
 def get_user_from_secret_key(secret_key, signature, request):
+    if not all([secret_key, signature]):
+        raise Unauthorized("Invalid embed request")
+
+    timestamp = request.args.get("timestamp", None)
+    if not timestamp:
+        raise Unauthorized("Lost timestamp")
+
+    now = int(time.time())
+    timestamp = int(timestamp)
+    ttl = int(org_settings["embed_urls_expired_seconds"])
+    if (timestamp + ttl <  now) or (timestamp - ttl > now):
+        raise Unauthorized("Invalid timestamp")
+
     org = current_org._get_current_object()
     user = None
     try:
         application = models.Application.get_by_secret_key(secret_key)
     except models.NoResultFound:
-        user = None
+        raise Unauthorized("Invalid application")
     else:
         if application.is_active:
-            if check_embed_signature(application.secret_token, request, signature):
+            if check_embed_signature(request, application.secret_token, timestamp, signature):
                 user = models.ApiUser(application.id, org, [], name="Application: {}".format(application.name))
             else:
                 raise Unauthorized("Invalid serect token")
