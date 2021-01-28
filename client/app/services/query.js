@@ -2,7 +2,7 @@ import moment from "moment";
 import debug from "debug";
 import Mustache from "mustache";
 import { axios } from "@/services/axios";
-import { getMeta } from "@/lib/utils";
+import { getToken } from "@/lib/utils";
 import {
   zipObject,
   isEmpty,
@@ -133,9 +133,14 @@ export class Query {
   }
 
   getQueryResult(maxAge) {
-    let key = getMeta("access-token");
     const execute = () =>
-      QueryResult.getByQueryId(this.id, this.getParameters().getExecutionValues(), this.getAutoLimit(), maxAge, key);
+      QueryResult.getByQueryId(
+        this.id,
+        this.getParameters().getExecutionValues(),
+        this.getAutoLimit(),
+        maxAge,
+        getToken()
+      );
     return this.prepareQueryResultExecution(execute, maxAge);
   }
 
@@ -392,8 +397,7 @@ const QueryService = {
   resultById: data => axios.get(`api/queries/${data.id}/results.json`),
   asDropdown: data => axios.get(`api/queries/${data.id}/dropdown`),
   associatedDropdown: ({ queryId, dropdownQueryId, token }) => {
-    let extra = token === "undefined" ? `?access_token=${token}` : "";
-    return axios.get(`api/queries/${queryId}/dropdowns/${dropdownQueryId}` + extra);
+    return axios.get(`api/queries/${queryId}/dropdowns/${dropdownQueryId}` + getToken());
   },
   favorites: params => axios.get("api/queries/favorites", { params }).then(mapResults),
   favorite: data => axios.post(`api/queries/${data.id}/favorite`),

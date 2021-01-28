@@ -12,7 +12,7 @@ import Filters from "@/components/Filters";
 
 import { Dashboard } from "@/services/dashboard";
 import routes from "@/services/routes";
-import { getMeta } from "@/lib/utils";
+import { getToken } from "@/lib/utils";
 
 import logoUrl from "@/assets/images/redash_icon_small.png";
 
@@ -104,16 +104,15 @@ class EmbedDashboardPage extends React.Component {
   }
 }
 
-let key = getMeta("access-token");
 routes.register(
   "Dashboards.EmbedViewOrEdit",
   routeWithApiKeySession({
     path: "/embed/dashboard/:dashboardId",
     render: pageProps => {
-      return <EmbedDashboardPage {...pageProps} token={key} />;
+      return <EmbedDashboardPage {...pageProps} token={getToken()} />;
     },
     getApiKey: currentRoute => {
-      return key;
+      return getToken(true);
     },
   })
 );

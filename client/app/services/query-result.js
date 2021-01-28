@@ -437,9 +437,8 @@ class QueryResult {
 
   static getByQueryId(id, parameters, applyAutoLimit, maxAge, token) {
     const queryResult = new QueryResult();
-    let extra = token === "undefined" ? `?access_token=${token}` : "";
     axios
-      .post(`api/queries/${id}/results` + extra, {
+      .post(`api/queries/${id}/results` + token, {
         id,
         parameters,
         apply_auto_limit: applyAutoLimit,

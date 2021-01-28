@@ -216,3 +216,12 @@ export function getMeta(metaName) {
 
   return "";
 }
+
+export function getToken(spec) {
+  let token = getMeta("access-token");
+  if (token === "undefined") {
+    return "";
+  }
+  let extra = spec ? token : `?access_token=${token}`;
+  return extra;
+}
