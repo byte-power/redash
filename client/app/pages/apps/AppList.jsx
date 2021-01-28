@@ -1,7 +1,6 @@
 import React from "react";
 
 import Button from "antd/lib/button";
-import Tag from "antd/lib/tag";
 import routeWithUserSession from "@/components/ApplicationArea/routeWithUserSession";
 import Link from "@/components/Link";
 import navigateTo from "@/components/ApplicationArea/navigateTo";

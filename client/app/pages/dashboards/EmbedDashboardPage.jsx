@@ -12,7 +12,6 @@ import Filters from "@/components/Filters";
 
 import { Dashboard } from "@/services/dashboard";
 import routes from "@/services/routes";
-import location from "@/services/location";
 import { getMeta } from "@/lib/utils";
 
 import logoUrl from "@/assets/images/redash_icon_small.png";
