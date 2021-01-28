@@ -8,8 +8,8 @@ let token = getMeta("access-token");
 const post = debounce(() => {
   const eventsToSend = events;
   events = [];
-
-  axios.post(`api/events?access_token=${token}`, eventsToSend);
+  let extra = token === "undefined" ? `?access_token=${token}` : "";
+  axios.post(`api/events` + extra, eventsToSend);
 }, 1000);
 
 export default function recordEvent(action, objectType, objectId, additionalProperties) {
