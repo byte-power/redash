@@ -37,9 +37,10 @@ class ShareDashboardDialog extends React.Component {
       iframeHeight: 300,
     };
 
+    let query = window.location.search ? window.location.search + "&" : "?";
     this.apiUrl = replace(API_SHARE_URL, "{id}", dashboard.id);
     this.enabled = this.props.hasOnlySafeQueries || dashboard.publicAccessEnabled;
-    this.embedUrl = `${clientConfig.basePath}embed/dashboard/${dashboard.id}?access_key=[xxx]&max_age=[xxxx in seconds]&timestamp=[xxx]&signature=[xxx]}`;
+    this.embedUrl = `${clientConfig.basePath}embed/dashboard/${dashboard.id}${query}secret_key=[xxx]&timestamp=[xxx]&signature=[xxx]}`;
   }
 
   static get headerContent() {
@@ -96,25 +97,6 @@ class ShareDashboardDialog extends React.Component {
       this.disableAccess();
     }
   };
-
-  getApps = () => {
-    this.setState({ loading: true });
-
-    axios
-      .get("/api/applications")
-      .then(data => {
-      })
-      .catch(() => {
-        notification.error("Failed to get App list");
-      })
-      .finally(() => {
-        this.setState({ loading: false });
-      });
-  };
-
-  componentDidMount() {
-    this.getApps();
-  }
 
   render() {
     const { dialog, dashboard } = this.props;
