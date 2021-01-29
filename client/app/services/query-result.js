@@ -3,6 +3,7 @@ import moment from "moment";
 import { axios } from "@/services/axios";
 import { QueryResultError } from "@/services/query";
 import { Auth } from "@/services/auth";
+import { getToken } from "@/lib/utils";
 import { isString, uniqBy, each, isNumber, includes, extend, forOwn, get } from "lodash";
 
 const logger = debug("redash:services:QueryResult");
@@ -348,9 +349,9 @@ class QueryResult {
     return queryResult;
   }
 
-  loadLatestCachedResult(queryId, parameters) {
+  loadLatestCachedResult(queryId, parameters, token) {
     axios
-      .post(`api/queries/${queryId}/results`, { queryId, parameters })
+      .post(`api/queries/${queryId}/results` + token, { queryId, parameters })
       .then(response => {
         this.update(response);
       })
@@ -391,12 +392,13 @@ class QueryResult {
   }
 
   refreshStatus(query, parameters, tryNumber = 1) {
+    let token = getToken();
     const loadResult = () =>
-      Auth.isAuthenticated() ? this.loadResult() : this.loadLatestCachedResult(query, parameters);
+      Auth.isAuthenticated() ? this.loadResult() : this.loadLatestCachedResult(query, parameters, token);
 
     const request = Auth.isAuthenticated()
       ? axios.get(`api/jobs/${this.job.id}`)
-      : axios.get(`api/queries/${query}/jobs/${this.job.id}`);
+      : axios.get(`api/queries/${query}/jobs/${this.job.id}` + token);
 
     request
       .then(jobResponse => {
