@@ -167,14 +167,14 @@ def get_api_key_from_request(request):
 def encode_params(params):
     order_params = collections.OrderedDict(sorted(params.items()))
     query = list(order_params.items())
-    l = []
+    ps = []
     for k, v in query:
         k = quote(str(k))
         if isinstance(v, str):
             v = v.encode('utf8')
         v = quote(v)
-        l.append(k + '=' + v)
-    return "&".join(l)
+        ps.append(k + '=' + v)
+    return "&".join(ps)
 
 def get_want_to_signature_url(url):
     o = urlparse(url)
@@ -182,9 +182,7 @@ def get_want_to_signature_url(url):
     params = {k: v[0] for k, v in params_list.items()}
     params.pop("signature", None)
     s = encode_params(params)
-    host = "".join([o.scheme, "://", o.netloc, o.path])
-    want_to_signature_url = "?".join([host, s])
-    return want_to_signature_url
+    return o._replace(query=s).geturl()
 
 def get_embed_signature(secret_token, url, timestamp):
     request_method = "GET"
@@ -195,8 +193,8 @@ def get_embed_signature(secret_token, url, timestamp):
     return signature
 
 def check_embed_signature(request, secret_token, timestamp, signature):
-    want_to_signature_url = get_want_to_signature_url(request.url)
-    s = get_embed_signature(secret_token, want_to_signature_url, timestamp)
+    url = get_want_to_signature_url(request.url)
+    s = get_embed_signature(secret_token, url, timestamp)
     return s == signature
 
 def get_user_from_secret_key(secret_key, signature, request):
@@ -213,12 +211,12 @@ def get_user_from_secret_key(secret_key, signature, request):
     if (timestamp + ttl <  now) or (timestamp - ttl > now):
         raise Unauthorized("Invalid timestamp")
 
-    org = current_org._get_current_object()
     user = None
+    org = current_org._get_current_object()
     try:
         application = models.Application.get_by_secret_key(secret_key)
     except models.NoResultFound:
-        raise Unauthorized("Invalid application")
+        raise Unauthorized("Unknown application")
     else:
         if application.is_active:
             if check_embed_signature(request, application.secret_token, timestamp, signature):
@@ -230,8 +228,8 @@ def get_user_from_secret_key(secret_key, signature, request):
     return user
 
 def get_user_from_access_token(access_token):
-    org = current_org._get_current_object()
     user = None
+    org = current_org._get_current_object()
     try:
         token = models.AccessToken(access_token)
         if token.is_valid:
