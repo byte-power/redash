@@ -31,6 +31,16 @@ export const RefreshScheduleDefault = {
   until: null,
 };
 
+export const AppDetail = PropTypes.shape({
+  id: PropTypes.number.isRequired,
+  name: PropTypes.string.isRequired,
+  icon_url: PropTypes.string,
+  description: PropTypes.string,
+  secret_key: PropTypes.string,
+  secret_token: PropTypes.string,
+  active: PropTypes.bool,
+});
+
 export const UserProfile = PropTypes.shape({
   id: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,

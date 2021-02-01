@@ -1,5 +1,6 @@
 import { isNull, isUndefined, isArray, isEmpty, get, map, join, has } from "lodash";
 import { Query } from "@/services/query";
+import { getMeta } from "@/lib/utils";
 import Parameter from "./Parameter";
 
 class QueryBasedDropdownParameter extends Parameter {
@@ -67,9 +68,13 @@ class QueryBasedDropdownParameter extends Parameter {
 
   loadDropdownValues() {
     if (this.parentQueryId) {
-      return Query.associatedDropdown({ queryId: this.parentQueryId, dropdownQueryId: this.queryId }).catch(() =>
-        Promise.resolve([])
-      );
+      let key = getMeta("access-token");
+
+      return Query.associatedDropdown({
+        queryId: this.parentQueryId,
+        dropdownQueryId: this.queryId,
+        token: key,
+      }).catch(() => Promise.resolve([]));
     }
 
     return Query.asDropdown({ id: this.queryId }).catch(Promise.resolve([]));

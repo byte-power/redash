@@ -8,6 +8,8 @@ import Form from "antd/lib/form";
 import Alert from "antd/lib/alert";
 import notification from "@/services/notification";
 import { wrap as wrapDialog, DialogPropType } from "@/components/DialogWrapper";
+import { clientConfig } from "@/services/auth";
+import CodeBlock from "@/components/CodeBlock";
 import InputWithCopy from "@/components/InputWithCopy";
 import HelpTrigger from "@/components/HelpTrigger";
 
@@ -32,10 +34,13 @@ class ShareDashboardDialog extends React.Component {
 
     this.state = {
       saving: false,
+      iframeHeight: 300,
     };
 
+    let query = window.location.search ? window.location.search + "&" : "?";
     this.apiUrl = replace(API_SHARE_URL, "{id}", dashboard.id);
     this.enabled = this.props.hasOnlySafeQueries || dashboard.publicAccessEnabled;
+    this.embedUrl = `${clientConfig.basePath}embed/dashboard/${dashboard.id}${query}secret_key=[xxx]&timestamp=[xxx]&signature=[xxx]}`;
   }
 
   static get headerContent() {
@@ -107,20 +112,29 @@ class ShareDashboardDialog extends React.Component {
               />
             </Form.Item>
           )}
-          <Form.Item label="Allow public access" {...this.formItemProps}>
-            <Switch
-              checked={dashboard.publicAccessEnabled}
-              onChange={this.onChange}
-              loading={this.state.saving}
-              disabled={!this.enabled}
-              data-test="PublicAccessEnabled"
-            />
-          </Form.Item>
-          {dashboard.public_url && (
-            <Form.Item label="Secret address" {...this.formItemProps}>
-              <InputWithCopy value={dashboard.public_url} data-test="SecretAddress" />
+          <div className="section">
+            <h5 className="m-t-0">Public URL</h5>
+            <Form.Item label="Allow public access" {...this.formItemProps}>
+              <Switch
+                checked={dashboard.publicAccessEnabled}
+                onChange={this.onChange}
+                loading={this.state.saving}
+                disabled={!this.enabled}
+                data-test="PublicAccessEnabled"
+              />
             </Form.Item>
-          )}
+            {dashboard.public_url && (
+              <Form.Item label="Secret address" {...this.formItemProps}>
+                <InputWithCopy value={dashboard.public_url} data-test="SecretAddress" />
+              </Form.Item>
+            )}
+          </div>
+          <div className="section">
+            <h5 className="m-t-0">IFrame Embed</h5>
+            <CodeBlock copyable>
+              {`<iframe src="${this.embedUrl}" width="100%" height="${this.state.iframeHeight}" frameborder="0"></iframe>`}
+            </CodeBlock>
+          </div>
         </Form>
       </Modal>
     );

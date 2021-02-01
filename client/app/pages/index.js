@@ -10,12 +10,17 @@ import "./alert/Alert";
 import "./dashboards/DashboardList";
 import "./dashboards/DashboardPage";
 import "./dashboards/PublicDashboardPage";
+import "./dashboards/EmbedDashboardPage";
 
 import "./data-sources/DataSourcesList";
 import "./data-sources/EditDataSource";
 
 import "./destinations/DestinationsList";
 import "./destinations/EditDestination";
+
+import "./apps/AppList";
+import "./apps/AppDetail";
+import "./apps/AppDashboard";
 
 import "./groups/GroupsList";
 import "./groups/GroupDataSources";

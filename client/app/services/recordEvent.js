@@ -1,4 +1,5 @@
 import { axios } from "@/services/axios";
+import { getToken } from "@/lib/utils";
 import { debounce, extend } from "lodash";
 
 let events = [];
@@ -7,7 +8,7 @@ const post = debounce(() => {
   const eventsToSend = events;
   events = [];
 
-  axios.post("api/events", eventsToSend);
+  axios.post(`api/events` + getToken(), eventsToSend);
 }, 1000);
 
 export default function recordEvent(action, objectType, objectId, additionalProperties) {

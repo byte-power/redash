@@ -204,3 +204,24 @@ export function formatColumnValue(value, columnType = null) {
 
   return value;
 }
+
+export function getMeta(metaName) {
+  const metas = document.getElementsByTagName("meta");
+
+  for (let i = 0; i < metas.length; i++) {
+    if (metas[i].getAttribute("name") === metaName) {
+      return metas[i].getAttribute("content");
+    }
+  }
+
+  return "";
+}
+
+export function getToken(spec) {
+  let token = getMeta("access-token");
+  if (token === "undefined") {
+    return "";
+  }
+  let extra = spec ? token : `?access_token=${token}`;
+  return extra;
+}

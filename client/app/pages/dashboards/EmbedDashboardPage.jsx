@@ -12,14 +12,15 @@ import Filters from "@/components/Filters";
 
 import { Dashboard } from "@/services/dashboard";
 import routes from "@/services/routes";
+import { getToken } from "@/lib/utils";
 
 import logoUrl from "@/assets/images/redash_icon_small.png";
 
 import useDashboard from "./hooks/useDashboard";
 
-import "./PublicDashboardPage.less";
+import "./EmbedDashboardPage.less";
 
-function PublicDashboard({ dashboard }) {
+function EmbedDashboard({ dashboard }) {
   const { globalParameters, filters, setFilters, refreshDashboard, loadWidget, refreshWidget } = useDashboard(
     dashboard
   );
@@ -52,13 +53,13 @@ function PublicDashboard({ dashboard }) {
   );
 }
 
-PublicDashboard.propTypes = {
+EmbedDashboard.propTypes = {
   dashboard: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
 };
 
-class PublicDashboardPage extends React.Component {
+class EmbedDashboardPage extends React.Component {
   static propTypes = {
-    token: PropTypes.string.isRequired,
+    dashboardId: PropTypes.string.isRequired,
     onError: PropTypes.func,
   };
 
@@ -72,8 +73,10 @@ class PublicDashboardPage extends React.Component {
   };
 
   componentDidMount() {
-    Dashboard.getByToken({ token: this.props.token })
-      .then(dashboard => this.setState({ dashboard, loading: false }))
+    Dashboard.getEmbed({ dashboard_id: this.props.dashboardId, token: this.props.token })
+      .then(dashboard => {
+        this.setState({ dashboard, loading: false });
+      })
       .catch(error => this.props.onError(error));
   }
 
@@ -86,7 +89,7 @@ class PublicDashboardPage extends React.Component {
             <BigMessage className="" icon="fa-spinner fa-2x fa-pulse" message="Loading..." />
           </div>
         ) : (
-          <PublicDashboard dashboard={dashboard} />
+          <EmbedDashboard dashboard={dashboard} />
         )}
         <div id="footer">
           <div className="text-center">
@@ -102,10 +105,14 @@ class PublicDashboardPage extends React.Component {
 }
 
 routes.register(
-  "Dashboards.ViewShared",
+  "Dashboards.EmbedViewOrEdit",
   routeWithApiKeySession({
-    path: "/public/dashboards/:token",
-    render: pageProps => <PublicDashboardPage {...pageProps} />,
-    getApiKey: currentRoute => currentRoute.routeParams.token,
+    path: "/embed/dashboard/:dashboardId",
+    render: pageProps => {
+      return <EmbedDashboardPage {...pageProps} token={getToken()} />;
+    },
+    getApiKey: currentRoute => {
+      return getToken(true);
+    },
   })
 );

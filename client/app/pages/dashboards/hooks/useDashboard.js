@@ -9,6 +9,7 @@ import recordEvent from "@/services/recordEvent";
 import { QueryResultError } from "@/services/query";
 import AddWidgetDialog from "@/components/dashboards/AddWidgetDialog";
 import TextboxDialog from "@/components/dashboards/TextboxDialog";
+import AppEditorDialog from "@/components/AppEditorDialog";
 import PermissionsEditorDialog from "@/components/PermissionsEditorDialog";
 import { editableMappingsToParameterMappings, synchronizeWidgetTitles } from "@/components/ParameterMappingInput";
 import ShareDashboardDialog from "../components/ShareDashboardDialog";
@@ -52,6 +53,14 @@ function useDashboard(dashboardData) {
     () => every(dashboard.widgets, w => (w.getQuery() ? w.getQuery().is_safe : true)),
     [dashboard]
   );
+
+  const manageApplicatins = useCallback(() => {
+    const aclUrl = `api/dashboards/${dashboard.id}/applications`;
+    AppEditorDialog.showModal({
+      aclUrl,
+      context: "dashboard",
+    });
+  }, [dashboard]);
 
   const managePermissions = useCallback(() => {
     const aclUrl = `api/dashboards/${dashboard.id}/acl`;
@@ -242,6 +251,7 @@ function useDashboard(dashboardData) {
     showShareDashboardDialog,
     showAddTextboxDialog,
     showAddWidgetDialog,
+    manageApplicatins,
     managePermissions,
   };
 }
