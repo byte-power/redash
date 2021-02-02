@@ -219,7 +219,7 @@ export function getMeta(metaName) {
 
 export function getToken(spec) {
   let token = getMeta("access-token");
-  if (token === "undefined") {
+  if (token === "undefined" || token === '{{access_token}}') {
     return "";
   }
   let extra = spec ? token : `?access_token=${token}`;

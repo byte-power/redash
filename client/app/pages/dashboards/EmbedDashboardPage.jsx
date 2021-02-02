@@ -30,7 +30,7 @@ function EmbedDashboard({ dashboard }) {
       <PageHeader title={dashboard.name} />
       {!isEmpty(globalParameters) && (
         <div className="m-b-10 p-15 bg-white tiled">
-          <Parameters parameters={globalParameters} onValuesChange={refreshDashboard} />
+          <Parameters parameters={globalParameters} hideParam={true} onValuesChange={refreshDashboard} />
         </div>
       )}
       {!isEmpty(filters) && (
