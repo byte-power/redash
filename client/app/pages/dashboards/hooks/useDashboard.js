@@ -167,16 +167,20 @@ function useDashboard(dashboardData) {
     );
   }, [dashboard]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const showShareDashboardDialog = useCallback(() => {
-    const handleDialogClose = () => setDashboard(currentDashboard => extend({}, currentDashboard));
+  const showShareDashboardDialog = useCallback(
+    param => {
+      const handleDialogClose = () => setDashboard(currentDashboard => extend({}, currentDashboard));
 
-    ShareDashboardDialog.showModal({
-      dashboard,
-      hasOnlySafeQueries,
-    })
-      .onClose(handleDialogClose)
-      .onDismiss(handleDialogClose);
-  }, [dashboard, hasOnlySafeQueries]);
+      ShareDashboardDialog.showModal({
+        dashboard,
+        showEmbed: !!param.embedUrl,
+        hasOnlySafeQueries,
+      })
+        .onClose(handleDialogClose)
+        .onDismiss(handleDialogClose);
+    },
+    [dashboard, hasOnlySafeQueries]
+  );
 
   const showAddTextboxDialog = useCallback(() => {
     TextboxDialog.showModal({

@@ -110,6 +110,7 @@ RefreshButton.propTypes = {
 
 function DashboardMoreOptionsButton({ dashboardOptions }) {
   const {
+    embedUrl,
     dashboard,
     setEditingLayout,
     togglePublished,
@@ -138,9 +139,11 @@ function DashboardMoreOptionsButton({ dashboardOptions }) {
       placement="bottomRight"
       overlay={
         <Menu data-test="DashboardMoreButtonMenu">
-          <Menu.Item>
+          {embedUrl && (
+            <Menu.Item>
               <a onClick={manageApplicatins}>Manage Applications</a>
-          </Menu.Item>
+            </Menu.Item>
+          )}
           <Menu.Item className={cx({ hidden: gridDisabled })}>
             <a onClick={() => setEditingLayout(true)}>Edit</a>
           </Menu.Item>
@@ -184,6 +187,7 @@ function DashboardControl({ dashboardOptions, headerExtra }) {
   const showFullscreenButton = !dashboard.is_draft;
   const canShareDashboard = canEditDashboard && !dashboard.is_draft;
   const showShareButton = !clientConfig.disablePublicUrls && (dashboard.publicAccessEnabled || canShareDashboard);
+  const showEmbedButton = !clientConfig.disableEmbedUrls;
   const showMoreOptionsButton = canEditDashboard;
   return (
     <div className="dashboard-control">
@@ -208,13 +212,15 @@ function DashboardControl({ dashboardOptions, headerExtra }) {
               <Button
                 className="icon-button m-l-5"
                 type={buttonType(dashboard.publicAccessEnabled)}
-                onClick={showShareDashboardDialog}
+                onClick={showShareDashboardDialog.bind(null, { embedUrl: showEmbedButton })}
                 data-test="OpenShareForm">
                 <i className="zmdi zmdi-share" />
               </Button>
             </Tooltip>
           )}
-          {showMoreOptionsButton && <DashboardMoreOptionsButton dashboardOptions={dashboardOptions} />}
+          {showMoreOptionsButton && (
+            <DashboardMoreOptionsButton dashboardOptions={{ ...dashboardOptions, embedUrl: showEmbedButton }} />
+          )}
         </span>
       )}
     </div>
