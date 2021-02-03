@@ -183,7 +183,7 @@ const AppDashboardPage = wrapSettingsTab(
 routes.register(
   "Apps.Dashboards",
   routeWithUserSession({
-    path: "/apps/:appId/dashboard",
+    path: "/applications/:appId/dashboard",
     title: "Apps Dashboards",
     render: pageProps => <AppDashboardPage {...pageProps} />,
   })

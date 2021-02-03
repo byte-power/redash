@@ -31,7 +31,7 @@ class AppsList extends React.Component {
     Columns.custom(
       (text, app) => (
         <div>
-          <Link href={"apps/" + app.id}>{text}</Link>
+          <Link href={"applications/" + app.id}>{text}</Link>
           {app.type === "builtin" && <span className="label label-default m-l-10">built-in</span>}
         </div>
       ),
@@ -49,7 +49,7 @@ class AppsList extends React.Component {
     Columns.custom(
       (text, app) => (
         <Button.Group>
-          <Link.Button href={`apps/${app.id}/dashboard`}>Dashboards</Link.Button>
+          <Link.Button href={`applications/${app.id}/dashboard`}>Dashboards</Link.Button>
         </Button.Group>
       ),
       {
@@ -82,7 +82,7 @@ class AppsList extends React.Component {
   ];
 
   createApp = () => {
-    CreateAppDialog.showModal().onClose(app => Application.create(app).then(newApp => navigateTo(`apps/${newApp.id}`)));
+    CreateAppDialog.showModal().onClose(app => Application.create(app).then(newApp => navigateTo(`applications/${newApp.id}`)));
   };
 
   onAppDeleted = () => {
@@ -136,8 +136,8 @@ const AppsListPage = wrapSettingsTab(
   "Apps.List",
   {
     permission: "list_users",
-    title: "Application",
-    path: "apps",
+    title: "Applications",
+    path: "applications",
     order: 2,
   },
   itemsList(
@@ -159,8 +159,8 @@ const AppsListPage = wrapSettingsTab(
 routes.register(
   "Apps.List",
   routeWithUserSession({
-    path: "/apps",
-    title: "Application",
+    path: "/applications",
+    title: "Applications",
     render: pageProps => <AppsListPage {...pageProps} currentPage="groups" />,
   })
 );
