@@ -113,23 +113,23 @@ class ShareDashboardDialog extends React.Component {
             </Form.Item>
           )}
           {showPublic && (
-          <div className="section">
-            <h5 className="m-t-0">Public URL</h5>
-            <Form.Item label="Allow public access" {...this.formItemProps}>
-              <Switch
-                checked={dashboard.publicAccessEnabled}
-                onChange={this.onChange}
-                loading={this.state.saving}
-                disabled={!this.enabled}
-                data-test="PublicAccessEnabled"
-              />
-            </Form.Item>
-            {dashboard.public_url && (
-              <Form.Item label="Secret address" {...this.formItemProps}>
-                <InputWithCopy value={dashboard.public_url} data-test="SecretAddress" />
+            <div className="section">
+              <h5 className="m-t-0">Public URL</h5>
+              <Form.Item label="Allow public access" {...this.formItemProps}>
+                <Switch
+                  checked={dashboard.publicAccessEnabled}
+                  onChange={this.onChange}
+                  loading={this.state.saving}
+                  disabled={!this.enabled}
+                  data-test="PublicAccessEnabled"
+                />
               </Form.Item>
-            )}
-          </div>
+              {dashboard.public_url && (
+                <Form.Item label="Secret address" {...this.formItemProps}>
+                  <InputWithCopy value={dashboard.public_url} data-test="SecretAddress" />
+                </Form.Item>
+              )}
+            </div>
           )}
           {showEmbed && (
             <div className="section">
