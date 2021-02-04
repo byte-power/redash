@@ -110,7 +110,7 @@ RefreshButton.propTypes = {
 
 function DashboardMoreOptionsButton({ dashboardOptions }) {
   const {
-    embedUrl,
+    showEmbedUrl,
     dashboard,
     setEditingLayout,
     togglePublished,
@@ -139,7 +139,7 @@ function DashboardMoreOptionsButton({ dashboardOptions }) {
       placement="bottomRight"
       overlay={
         <Menu data-test="DashboardMoreButtonMenu">
-          {embedUrl && (
+          {showEmbedUrl && (
             <Menu.Item>
               <a onClick={manageApplicatins}>Manage Applications</a>
             </Menu.Item>
@@ -214,14 +214,17 @@ function DashboardControl({ dashboardOptions, headerExtra }) {
               <Button
                 className="icon-button m-l-5"
                 type={buttonType(dashboard.publicAccessEnabled)}
-                onClick={showShareDashboardDialog.bind(null, { embedUrl: showEmbedButton })}
+                onClick={showShareDashboardDialog.bind(null, {
+                  showPublicUrl: !clientConfig.disablePublicUrls,
+                  showEmbedUrl: showEmbedButton,
+                })}
                 data-test="OpenShareForm">
                 <i className="zmdi zmdi-share" />
               </Button>
             </Tooltip>
           )}
           {showMoreOptionsButton && (
-            <DashboardMoreOptionsButton dashboardOptions={{ ...dashboardOptions, embedUrl: showEmbedButton }} />
+            <DashboardMoreOptionsButton dashboardOptions={{ ...dashboardOptions, showEmbedUrl: showEmbedButton }} />
           )}
         </span>
       )}

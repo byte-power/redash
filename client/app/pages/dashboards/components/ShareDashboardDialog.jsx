@@ -99,7 +99,7 @@ class ShareDashboardDialog extends React.Component {
   };
 
   render() {
-    const { dialog, dashboard, showEmbed } = this.props;
+    const { dialog, dashboard, showPublic, showEmbed } = this.props;
 
     return (
       <Modal {...dialog.props} title={this.constructor.headerContent} footer={null}>
@@ -112,6 +112,7 @@ class ShareDashboardDialog extends React.Component {
               />
             </Form.Item>
           )}
+          {showPublic && (
           <div className="section">
             <h5 className="m-t-0">Public URL</h5>
             <Form.Item label="Allow public access" {...this.formItemProps}>
@@ -129,6 +130,7 @@ class ShareDashboardDialog extends React.Component {
               </Form.Item>
             )}
           </div>
+          )}
           {showEmbed && (
             <div className="section">
               <h5 className="m-t-0">IFrame Embed</h5>
