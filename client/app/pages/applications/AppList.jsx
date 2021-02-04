@@ -99,7 +99,7 @@ class AppsList extends React.Component {
           <div className="m-b-15">
             <Button type="primary" onClick={this.createApp}>
               <i className="fa fa-plus m-r-5" />
-              New App
+              New Application
             </Button>
           </div>
         )}
