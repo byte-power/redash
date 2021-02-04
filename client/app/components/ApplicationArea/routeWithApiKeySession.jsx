@@ -10,7 +10,7 @@ import { Auth, clientConfig } from "@/services/auth";
 // - `onError` field which is a `handleError` method of nearest error boundary
 // - `apiKey` field
 
-function ApiKeySessionWrapper({ apiKey, currentRoute, renderChildren }) {
+function ApiKeySessionWrapper({ apiKey, currentRoute, renderChildren, mode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { handleError } = useContext(ErrorBoundaryContext);
 
@@ -33,7 +33,11 @@ function ApiKeySessionWrapper({ apiKey, currentRoute, renderChildren }) {
     };
   }, [apiKey]);
 
-  if (!isAuthenticated || clientConfig.disablePublicUrls) {
+  if (
+    !isAuthenticated ||
+    (mode !== "embed" && clientConfig.disablePublicUrls) ||
+    (mode === "embed" && clientConfig.disableEmbedUrls)
+  ) {
     return null;
   }
 
@@ -53,11 +57,16 @@ ApiKeySessionWrapper.defaultProps = {
   renderChildren: () => null,
 };
 
-export default function routeWithApiKeySession({ render, getApiKey, ...rest }) {
+export default function routeWithApiKeySession({ render, getApiKey, mode, ...rest }) {
   return {
     ...rest,
     render: currentRoute => (
-      <ApiKeySessionWrapper apiKey={getApiKey(currentRoute)} currentRoute={currentRoute} renderChildren={render} />
+      <ApiKeySessionWrapper
+        apiKey={getApiKey(currentRoute)}
+        currentRoute={currentRoute}
+        renderChildren={render}
+        mode={mode}
+      />
     ),
   };
 }
