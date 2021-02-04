@@ -18,11 +18,11 @@ function enableApplication(app) {
       active: true,
     })
     .then(data => {
-      notification.success(`App ${appName} is now actived.`);
+      notification.success(`Application ${appName} is now actived.`);
       return data;
     })
     .catch(error => {
-      notification.error("Cannot active app", getErrorMessage(error));
+      notification.error("Cannot active application", getErrorMessage(error));
     });
 }
 
@@ -33,11 +33,11 @@ function disableApplication(app) {
       active: false,
     })
     .then(data => {
-      notification.warning(`App ${appName} is now deactived.`);
+      notification.warning(`Application ${appName} is now deactived.`);
       return data;
     })
     .catch(error => {
-      notification.error("Cannot deactive app", getErrorMessage(error));
+      notification.error("Cannot deactive application", getErrorMessage(error));
     });
 }
 
@@ -46,11 +46,11 @@ function deleteApplication(app) {
   return axios
     .delete(disableResource(app))
     .then(data => {
-      notification.warning(`App ${appName} has been deleted.`);
+      notification.warning(`Application ${appName} has been deleted.`);
       return data;
     })
     .catch(error => {
-      notification.error("Cannot delete app", getErrorMessage(error));
+      notification.error("Cannot delete application", getErrorMessage(error));
     });
 }
 

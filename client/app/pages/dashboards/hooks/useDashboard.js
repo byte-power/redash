@@ -173,7 +173,8 @@ function useDashboard(dashboardData) {
 
       ShareDashboardDialog.showModal({
         dashboard,
-        showEmbed: !!param.embedUrl,
+        showPublic: !!param.showPublicUrl,
+        showEmbed: !!param.showEmbedUrl,
         hasOnlySafeQueries,
       })
         .onClose(handleDialogClose)

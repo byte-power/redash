@@ -103,6 +103,7 @@ routes.register(
   "Dashboards.EmbedViewOrEdit",
   routeWithApiKeySession({
     path: "/embed/dashboard/:dashboardId",
+    mode: "embed",
     render: pageProps => {
       return <EmbedDashboardPage {...pageProps} token={getToken()} />;
     },

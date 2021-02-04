@@ -23,7 +23,7 @@ function CreateAppDialog({ dialog }) {
   return (
     <Modal
       {...dialog.props}
-      title="Create a New App"
+      title="Create a New Application"
       footer={[
         <Button key="cancel" {...dialog.props.cancelButtonProps} onClick={dialog.dismiss}>
           Cancel

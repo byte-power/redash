@@ -18,9 +18,9 @@ import "./data-sources/EditDataSource";
 import "./destinations/DestinationsList";
 import "./destinations/EditDestination";
 
-import "./apps/AppList";
-import "./apps/AppDetail";
-import "./apps/AppDashboard";
+import "./applications/AppList";
+import "./applications/AppDetail";
+import "./applications/AppDashboard";
 
 import "./groups/GroupsList";
 import "./groups/GroupDataSources";
