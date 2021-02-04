@@ -33,7 +33,7 @@ export default function ToggleAppForm(props) {
 
   const buttonProps = {
     type: app.active ? "danger" : "primary",
-    children: app.active ? "Disable App" : "Enable App",
+    children: app.active ? "Disable Application" : "Enable Application",
   };
 
   return (
