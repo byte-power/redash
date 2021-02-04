@@ -86,7 +86,7 @@ class AppDashboards extends React.Component {
       inputPlaceholder: "Search dashboards...",
       selectedItemsTitle: "New Dashboard",
       searchItems: searchTerm =>
-        Dashboard.query({ q: searchTerm }).then(({ results }) => {
+        Dashboard.queryAll({ q: searchTerm }).then(({ results }) => {
           return results;
         }),
       renderItem: (item, { isSelected }) => {
