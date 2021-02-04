@@ -186,7 +186,9 @@ function DashboardControl({ dashboardOptions, headerExtra }) {
   const showRefreshButton = true;
   const showFullscreenButton = !dashboard.is_draft;
   const canShareDashboard = canEditDashboard && !dashboard.is_draft;
-  const showShareButton = !clientConfig.disablePublicUrls && (dashboard.publicAccessEnabled || canShareDashboard);
+  const showShareButton =
+    (!clientConfig.disablePublicUrls || !clientConfig.disableEmbedUrls) &&
+    (dashboard.publicAccessEnabled || canShareDashboard);
   const showEmbedButton = !clientConfig.disableEmbedUrls;
   const showMoreOptionsButton = canEditDashboard;
   return (
