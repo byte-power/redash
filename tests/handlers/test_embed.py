@@ -37,6 +37,28 @@ class TestUnembedablesDashboard(BaseTestCase):
         self.assertIn("frame-ancestors 'none'", res.headers["Content-Security-Policy"])
         self.assertEqual(res.headers["X-Frame-Options"], "deny")
 
+class TestEmbedDashboardList(BaseTestCase):
+    def setUp(self):
+       super(TestEmbedDashboardList, self).setUp()
+
+    def test_get_success(self):
+        admin = self.factory.create_admin()
+        dashboard1 = self.factory.create_dashboard(is_archived=True, is_draft=True)
+        dashboard2 = self.factory.create_dashboard(is_archived=True, is_draft=False)
+        dashboard3 = self.factory.create_dashboard(is_archived=False, is_draft=False)
+        dashboard4 = self.factory.create_dashboard(is_archived=False, is_draft=False)
+
+        rv = self.make_request("get", "/api/dashboards/embed", user=admin)
+        assert len(rv.json["results"]) == 2
+
+    def test_get_not_admin(self):
+        dashboard1 = self.factory.create_dashboard(is_archived=True, is_draft=True)
+        dashboard2 = self.factory.create_dashboard(is_archived=True, is_draft=False)
+        dashboard3 = self.factory.create_dashboard(is_archived=False, is_draft=False)
+
+        rv = self.make_request("get", "/api/dashboards/embed")
+        self.assertEqual(rv.status_code, 403)
+
 class TestEmbedDashboard(BaseTestCase):
     def setUp(self):
         super(TestEmbedDashboard, self).setUp()

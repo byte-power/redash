@@ -18,6 +18,7 @@ from redash.handlers.dashboards import (
     DashboardTagsResource,
     PublicDashboardResource,
     EmbedDashboardResource,
+    EmbedDashboardListResource,
 )
 from redash.handlers.data_sources import (
     DataSourceListResource,
@@ -144,6 +145,11 @@ api.add_org_resource(
     EmbedDashboardResource,
     "/api/dashboards/embed/<dashboard_id>",
     endpoint="embed_dashboard",
+)
+api.add_org_resource(
+    EmbedDashboardListResource,
+    "/api/dashboards/embed",
+    endpoint="embed_dashboards",
 )
 api.add_org_resource(
     PublicDashboardResource,
