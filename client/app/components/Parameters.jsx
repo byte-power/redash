@@ -23,6 +23,7 @@ export default class Parameters extends React.Component {
   static propTypes = {
     parameters: PropTypes.arrayOf(PropTypes.instanceOf(Parameter)),
     editable: PropTypes.bool,
+    hideParam: PropTypes.bool,
     disableUrlUpdate: PropTypes.bool,
     onValuesChange: PropTypes.func,
     onPendingValuesChange: PropTypes.func,
@@ -32,6 +33,7 @@ export default class Parameters extends React.Component {
   static defaultProps = {
     parameters: [],
     editable: false,
+    hideParam: false,
     disableUrlUpdate: false,
     onValuesChange: () => {},
     onPendingValuesChange: () => {},
@@ -146,8 +148,11 @@ export default class Parameters extends React.Component {
 
   render() {
     const { parameters } = this.state;
-    const { editable } = this.props;
+    const { editable, hideParam } = this.props;
     const dirtyParamCount = size(filter(parameters, "hasPendingValue"));
+    if (hideParam) {
+      return <span></span>;
+    }
     return (
       <SortableContainer
         disabled={!editable}

@@ -71,7 +71,7 @@ const AppDetailPage = wrapSettingsTab("Apps.Detail", null, AppDetail);
 routes.register(
   "Apps.ViewOrEdit",
   routeWithUserSession({
-    path: "/apps/:appId",
+    path: "/applications/:appId",
     title: "Application",
     render: pageProps => <AppDetailPage {...pageProps} />,
   })

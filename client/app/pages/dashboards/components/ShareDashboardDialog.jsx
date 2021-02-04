@@ -99,7 +99,7 @@ class ShareDashboardDialog extends React.Component {
   };
 
   render() {
-    const { dialog, dashboard } = this.props;
+    const { dialog, dashboard, showEmbed } = this.props;
 
     return (
       <Modal {...dialog.props} title={this.constructor.headerContent} footer={null}>
@@ -129,12 +129,14 @@ class ShareDashboardDialog extends React.Component {
               </Form.Item>
             )}
           </div>
-          <div className="section">
-            <h5 className="m-t-0">IFrame Embed</h5>
-            <CodeBlock copyable>
-              {`<iframe src="${this.embedUrl}" width="100%" height="${this.state.iframeHeight}" frameborder="0"></iframe>`}
-            </CodeBlock>
-          </div>
+          {showEmbed && (
+            <div className="section">
+              <h5 className="m-t-0">IFrame Embed</h5>
+              <CodeBlock copyable>
+                {`<iframe src="${this.embedUrl}" width="100%" height="${this.state.iframeHeight}" frameborder="0"></iframe>`}
+              </CodeBlock>
+            </div>
+          )}
         </Form>
       </Modal>
     );
