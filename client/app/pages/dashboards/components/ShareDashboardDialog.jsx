@@ -37,7 +37,13 @@ class ShareDashboardDialog extends React.Component {
       iframeHeight: 300,
     };
 
-    let query = window.location.search ? window.location.search + "&" : "?";
+    let query = "?";
+    if (window.location.search) {
+      var searchParams = new URLSearchParams(window.location.search);
+      for (let key of searchParams.keys()) {
+        query += key + "=[xxx]&";
+      }
+    }
     this.apiUrl = replace(API_SHARE_URL, "{id}", dashboard.id);
     this.enabled = this.props.hasOnlySafeQueries || dashboard.publicAccessEnabled;
     this.embedUrl = `${clientConfig.basePath}embed/dashboard/${dashboard.id}${query}secret_key=[xxx]&timestamp=[xxx]&signature=[xxx]}`;
