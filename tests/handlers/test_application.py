@@ -12,13 +12,15 @@ class TestApplicationResourceList(BaseTestCase):
         application_diff_org = self.factory.create_application(org=self.factory.create_org())
 
         rv = self.make_request("get", "/api/applications")
-        ids = [s["id"] for s in rv.json]
+        results = rv.json["results"]
+        ids = [s["id"] for s in results]
 
+        assert len(rv.json["results"]) == 2
         self.assertIn(application1.id, ids)
         self.assertIn(application2.id, ids)
         self.assertNotIn(application_diff_org.id, ids)
 
-        for app in rv.json:
+        for app in results:
             self.assertIn(hiden_token, app["secret_token"])
 
     def test_create_application_not_admin(self):
