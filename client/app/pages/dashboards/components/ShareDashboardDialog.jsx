@@ -39,7 +39,7 @@ class ShareDashboardDialog extends React.Component {
 
     let query = "?";
     if (window.location.search) {
-      var searchParams = new URLSearchParams(window.location.search);
+      let searchParams = new URLSearchParams(window.location.search);
       for (let key of searchParams.keys()) {
         query += key + "=[xxx]&";
       }
