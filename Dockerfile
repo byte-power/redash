@@ -79,6 +79,11 @@ WORKDIR /app
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PIP_NO_CACHE_DIR=1
 
+# Fix issue #5300
+# the issue is related with the pip version update of the base image "python:3.7-slim".
+# it was recently updated to use pip v.20.3.1 (V. 20.3 introduced a major update on the pip dep. resolver)
+RUN pip install pip==20.2.4
+
 # We first copy only the requirements file, to avoid rebuilding on every file
 # change.
 COPY requirements.txt requirements_bundles.txt requirements_dev.txt requirements_all_ds.txt ./

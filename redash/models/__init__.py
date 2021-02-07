@@ -1155,6 +1155,17 @@ class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model
         return query
 
     @classmethod
+    def get_all(cls, org):
+        query = (
+            Dashboard.query.filter(
+                Dashboard.is_archived == False,
+                Dashboard.is_draft == False,
+                Dashboard.org == org,
+            )
+        )
+        return query
+
+    @classmethod
     def search(cls, org, groups_ids, user_id, search_term):
         # TODO: switch to FTS
         return cls.all(org, groups_ids, user_id).filter(

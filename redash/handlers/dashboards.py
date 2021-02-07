@@ -15,6 +15,7 @@ from redash.permissions import (
     require_admin_or_owner,
     require_object_modify_permission,
     require_permission,
+    require_admin,
 )
 from redash.security import csp_allows_embeding
 from redash.serializers import (
@@ -300,6 +301,36 @@ class EmbedDashboardResource(BaseResource):
     
         return public_dashboard(dashboard)
 
+
+class EmbedDashboardListResource(BaseResource):
+    @require_admin
+    def get(self):
+        """
+        Lists all dashboards except archived and draft.
+
+        :qparam number page_size: Number of queries to return per page
+        :qparam number page: Page number to retrieve
+        :qparam number order: Name of column to order by
+        """
+
+        results = models.Dashboard.get_all(self.current_org)
+        results = filter_by_tags(results, models.Dashboard.tags)
+
+        ordered_results = order_results(results)
+
+        page = request.args.get("page", 1, type=int)
+        page_size = request.args.get("page_size", 25, type=int)
+
+        response = paginate(
+            ordered_results,
+            page=page,
+            page_size=page_size,
+            serializer=DashboardSerializer,
+        )
+
+        self.record_event({"action": "list", "object_type": "dashboard"})
+
+        return response
 
 class DashboardShareResource(BaseResource):
     def post(self, dashboard_id):

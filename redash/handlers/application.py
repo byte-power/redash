@@ -1,11 +1,29 @@
 import time
 from flask import request
-from funcy import project
-from flask_restful import abort
+from funcy import project, partial
 
 from redash import models
 from redash.permissions import require_admin, require_permission, require_admin_or_owner
-from redash.handlers.base import BaseResource, require_fields, get_object_or_404
+from redash.handlers.base import (
+    BaseResource,
+    require_fields,
+    get_object_or_404,
+    paginate,
+    order_results as _order_results,
+)
+from redash.serializers import ApplicationSerializer
+
+# Ordering map for relationships
+order_map = {
+    "name": "lowercase_name",
+    "-name": "-lowercase_name",
+    "created_at": "created_at",
+    "-created_at": "-created_at",
+}
+
+order_results = partial(
+    _order_results, default_order="-created_at", allowed_orders=order_map
+)
 
 class ApplicationListResource(BaseResource):
     @require_admin
@@ -43,7 +61,19 @@ class ApplicationListResource(BaseResource):
             {"action": "list", "object_id": "applications", "object_type": "application"}
         )
 
-        return [app.to_dict() for app in applications]
+        ordered_results = order_results(applications)
+
+        page = request.args.get("page", 1, type=int)
+        page_size = request.args.get("page_size", 25, type=int)
+
+        response = paginate(
+            ordered_results,
+            page=page,
+            page_size=page_size,
+            serializer=ApplicationSerializer,
+        )
+        return response
+
 
 class ApplicationResource(BaseResource):
     @require_admin

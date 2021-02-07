@@ -214,6 +214,23 @@ def serialize_alert(alert, full=True):
 
     return d
 
+def serialize_application(application, **kwargs):
+    return application.to_dict(**kwargs)
+
+class ApplicationSerializer(Serializer):
+    def __init__(self, object_or_list, **kwargs):
+        self.object_or_list = object_or_list
+        self.options = kwargs
+
+    def serialize(self):
+        if isinstance(self.object_or_list, models.Application):
+            result = serialize_application(self.object_or_list, **self.options)
+        else:
+            result = [
+                serialize_application(obj, **self.options) for obj in self.object_or_list
+            ]
+
+        return result
 
 def serialize_dashboard(obj, with_widgets=False, user=None, with_favorite_state=True):
     layout = json_loads(obj.layout)
