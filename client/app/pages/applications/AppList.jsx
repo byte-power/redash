@@ -8,7 +8,7 @@ import Paginator from "@/components/Paginator";
 
 import { wrap as itemsList, ControllerType } from "@/components/items-list/ItemsList";
 import { ResourceItemsSource } from "@/components/items-list/classes/ItemsSource";
-import { StateStorage } from "@/components/items-list/classes/StateStorage";
+import { UrlStateStorage } from "@/components/items-list/classes/StateStorage";
 
 import LoadingState from "@/components/items-list/components/LoadingState";
 import EmptyState from "@/components/items-list/components/EmptyState";
@@ -82,7 +82,9 @@ class AppsList extends React.Component {
   ];
 
   createApp = () => {
-    CreateAppDialog.showModal().onClose(app => Application.create(app).then(newApp => navigateTo(`applications/${newApp.id}`)));
+    CreateAppDialog.showModal().onClose(app =>
+      Application.create(app).then(newApp => navigateTo(`applications/${newApp.id}`))
+    );
   };
 
   onAppDeleted = () => {
@@ -144,15 +146,11 @@ const AppsListPage = wrapSettingsTab(
     AppsList,
     () =>
       new ResourceItemsSource({
-        isPlainList: true,
-        getRequest() {
-          return {};
-        },
         getResource() {
           return Application.query.bind(Application);
         },
       }),
-    () => new StateStorage({ orderByField: "name", itemsPerPage: 10 })
+    () => new UrlStateStorage({ orderByField: "name", itemsPerPage: 10 })
   )
 );
 
