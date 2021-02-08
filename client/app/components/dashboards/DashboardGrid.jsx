@@ -42,6 +42,7 @@ const DashboardWidget = React.memo(
     onRemoveWidget,
     onParameterMappingsChange,
     canEdit,
+    hideHeader,
     isPublic,
     isLoading,
     filters,
@@ -58,6 +59,7 @@ const DashboardWidget = React.memo(
           dashboard={dashboard}
           filters={filters}
           canEdit={canEdit}
+          hideHeader={hideHeader}
           isPublic={isPublic}
           isLoading={isLoading}
           onLoad={onLoad}
@@ -82,6 +84,7 @@ const DashboardWidget = React.memo(
 
 class DashboardGrid extends React.Component {
   static propTypes = {
+    hideHeader: PropTypes.bool,
     isEditing: PropTypes.bool.isRequired,
     isPublic: PropTypes.bool,
     dashboard: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
@@ -231,6 +234,7 @@ class DashboardGrid extends React.Component {
       onParameterMappingsChange,
       filters,
       dashboard,
+      hideHeader,
       isPublic,
       widgets,
     } = this.props;
@@ -264,6 +268,7 @@ class DashboardGrid extends React.Component {
                 dashboard={dashboard}
                 widget={widget}
                 filters={filters}
+                hideHeader={hideHeader}
                 isPublic={isPublic}
                 isLoading={widget.loading}
                 canEdit={dashboard.canEdit()}

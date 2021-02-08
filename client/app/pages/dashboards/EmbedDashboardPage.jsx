@@ -38,6 +38,7 @@ function EmbedDashboard({ dashboard }) {
           dashboard={dashboard}
           widgets={dashboard.widgets}
           filters={filters}
+          hideHeader={true}
           isEditing={false}
           isPublic
           onLoadWidget={loadWidget}
@@ -86,14 +87,6 @@ class EmbedDashboardPage extends React.Component {
         ) : (
           <EmbedDashboard dashboard={dashboard} />
         )}
-        <div id="footer">
-          <div className="text-center">
-            <Link href="https://redash.io">
-              <img alt="Redash Logo" src={logoUrl} width="38" />
-            </Link>
-          </div>
-          Powered by <Link href="https://redash.io/?ref=public-dashboard">Redash</Link>
-        </div>
       </div>
     );
   }

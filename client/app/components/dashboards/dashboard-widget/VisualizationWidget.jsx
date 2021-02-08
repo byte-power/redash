@@ -84,11 +84,14 @@ function RefreshIndicator({ refreshStartedAt }) {
 RefreshIndicator.propTypes = { refreshStartedAt: Moment };
 RefreshIndicator.defaultProps = { refreshStartedAt: null };
 
-function VisualizationWidgetHeader({ widget, refreshStartedAt, parameters, onParametersUpdate }) {
+function VisualizationWidgetHeader({ widget, hideHeader, refreshStartedAt, parameters, onParametersUpdate }) {
   const canViewQuery = currentUser.hasPermission("view_query");
 
+  if (hideHeader) {
+    return null;
+  }
   return (
-    <>
+    <React.Fragment>
       <RefreshIndicator refreshStartedAt={refreshStartedAt} />
       <div className="t-header widget clearfix">
         <div className="th-title">
@@ -107,7 +110,7 @@ function VisualizationWidgetHeader({ widget, refreshStartedAt, parameters, onPar
           <Parameters parameters={parameters} onValuesChange={onParametersUpdate} />
         </div>
       )}
-    </>
+    </React.Fragment>
   );
 }
 
@@ -187,6 +190,7 @@ class VisualizationWidget extends React.Component {
     widget: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
     dashboard: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
     filters: FiltersType,
+    hideHeader: PropTypes.bool,
     isPublic: PropTypes.bool,
     isLoading: PropTypes.bool,
     canEdit: PropTypes.bool,
@@ -284,7 +288,7 @@ class VisualizationWidget extends React.Component {
   }
 
   render() {
-    const { widget, isLoading, isPublic, canEdit, onRefresh } = this.props;
+    const { widget, isLoading, hideHeader, isPublic, canEdit, onRefresh } = this.props;
     const { localParameters } = this.state;
     const widgetQueryResult = widget.getQueryResult();
     const isRefreshing = isLoading && !!(widgetQueryResult && widgetQueryResult.getStatus());
@@ -301,6 +305,7 @@ class VisualizationWidget extends React.Component {
         header={
           <VisualizationWidgetHeader
             widget={widget}
+            hideHeader={hideHeader}
             refreshStartedAt={isRefreshing ? widget.refreshStartedAt : null}
             parameters={localParameters}
             onParametersUpdate={onRefresh}
