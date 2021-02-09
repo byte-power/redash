@@ -214,7 +214,7 @@ class Widget {
         const result = cloneParameter(param);
         result.title = mapping.title || param.title;
         result.locals = [param];
-        result.urlPrefix = `p_w${this.id}_`;
+        result.urlPrefix = `param_w${this.id}_`;
         if (mapping.type === Widget.MappingType.StaticValue) {
           result.setValue(mapping.value);
         } else {
