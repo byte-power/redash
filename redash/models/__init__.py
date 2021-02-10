@@ -1403,6 +1403,14 @@ class Application(TimestampMixin, BelongsToOrgMixin, db.Model):
         return cls.query.filter(cls.org == org)
 
     @classmethod
+    def get_by_name_and_org(cls, name, org):
+        try:
+            application = cls.get_by_org(org).filter(cls.name == name).one()
+        except NoResultFound as e:
+            return None
+        return application
+
+    @classmethod
     def get_by_secret_key_and_org(cls, secret_key, org):
         return cls.get_by_org(org).filter(cls.secret_key == secret_key).one()
 

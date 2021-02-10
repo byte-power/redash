@@ -1,5 +1,6 @@
 import time
 from flask import request
+from flask_restful import abort
 from funcy import project, partial
 
 from redash import models
@@ -30,9 +31,13 @@ class ApplicationListResource(BaseResource):
     def post(self):
         req = request.get_json(True)
         require_fields(req, ("name",))
+        name = req["name"]
+
+        if models.Application.get_by_name_and_org(name, self.current_org) is not None:
+            abort(400, message="Name already token")
 
         application = models.Application(
-            name=req["name"],
+            name=name,
             icon_url=req.get("icon_url"),
             active = req.get("active", True),
             description=req.get("description"),

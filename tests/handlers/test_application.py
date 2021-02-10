@@ -23,6 +23,18 @@ class TestApplicationResourceList(BaseTestCase):
         for app in results:
             self.assertIn(hiden_token, app["secret_token"])
 
+    def test_create_same_name_application(self):
+        name = "Test_SAME"
+        application1 = self.factory.create_application(name=name, icon_url="", description="Just for test")
+        admin = self.factory.create_admin()
+        data = {
+            "name": name,
+            "icon_url": "https://xx.xx.com/1.jpg",
+            "description": "updated description",
+        }
+        rv = self.make_request("post", "/api/applications", data=data, user=admin)
+        self.assertEqual(rv.status_code, 400)
+
     def test_create_application_not_admin(self):
         data = {
             "name": "test_create_application_not_admin",
