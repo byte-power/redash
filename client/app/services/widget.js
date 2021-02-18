@@ -143,6 +143,10 @@ class Widget {
       if (maxAge === undefined || force) {
         maxAge = force ? 0 : undefined;
       }
+      let num = parseInt(maxAge);
+      if (!isNaN(num)) {
+        maxAge = num;
+      }
 
       const queryResult = this.getQuery().getQueryResult(maxAge);
       this.queryResult = queryResult;
