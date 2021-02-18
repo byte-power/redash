@@ -23,6 +23,12 @@ function AppDetail({ appId, onError }) {
 
   useEffect(() => {
     let isCancelled = false;
+    let detail = window.sessionStorage.getItem("newAppDetail");
+    if (detail) {
+      isCancelled = true;
+      setApp(JSON.parse(detail));
+      window.sessionStorage.removeItem("newAppDetail");
+    }
     Application.get({ id: appId })
       .then(app => {
         if (!isCancelled) {
