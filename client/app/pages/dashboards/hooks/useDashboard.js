@@ -109,8 +109,9 @@ function useDashboard(dashboardData) {
   const loadWidget = useCallback((widget, forceRefresh = false) => {
     widget.getParametersDefs(); // Force widget to read parameters values from URL
     setDashboard(currentDashboard => extend({}, currentDashboard));
+    const { max_age } = location.search;
     return widget
-      .load(forceRefresh)
+      .load(forceRefresh, max_age)
       .catch(error => {
         // QueryResultErrors are expected
         if (error instanceof QueryResultError) {
