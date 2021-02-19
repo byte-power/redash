@@ -23,6 +23,50 @@ class TestApplicationResourceList(BaseTestCase):
         for app in results:
             self.assertIn(hiden_token, app["secret_token"])
 
+    def test_get_application_list2(self):
+        application1 = self.factory.create_application(name="Test1", icon_url="", description="Just for test")
+        application2 = self.factory.create_application(name="Test2", icon_url="", description="Just for test")
+        application_diff_org = self.factory.create_application(org=self.factory.create_org())
+
+        rv = self.make_request("get", "/api/applications?q=")
+        results = rv.json["results"]
+        ids = [s["id"] for s in results]
+
+        assert len(rv.json["results"]) == 2
+        self.assertIn(application1.id, ids)
+        self.assertIn(application2.id, ids)
+        self.assertNotIn(application_diff_org.id, ids)
+
+        for app in results:
+            self.assertIn(hiden_token, app["secret_token"])
+
+    def test_search_application(self):
+        application1 = self.factory.create_application(name="ZZZ", icon_url="", description="Just for test")
+        application2 = self.factory.create_application(name="AAA", icon_url="", description="Just for test")
+        application_diff_org = self.factory.create_application(org=self.factory.create_org())
+
+        rv = self.make_request("get", "/api/applications?q=AA")
+        results = rv.json["results"]
+        ids = [s["id"] for s in results]
+
+        assert len(rv.json["results"]) == 1
+        self.assertIn(application2.id, ids)
+        self.assertNotIn(application_diff_org.id, ids)
+
+    def test_search_application2(self):
+        application1 = self.factory.create_application(name="ZZZ2", icon_url="", description="Just for test")
+        application2 = self.factory.create_application(name="AAA2", icon_url="", description="Just for test")
+        application_diff_org = self.factory.create_application(org=self.factory.create_org())
+
+        rv = self.make_request("get", "/api/applications?q=test")
+        results = rv.json["results"]
+        ids = [s["id"] for s in results]
+
+        assert len(rv.json["results"]) == 2
+        self.assertIn(application1.id, ids)
+        self.assertIn(application2.id, ids)
+        self.assertNotIn(application_diff_org.id, ids)
+
     def test_create_same_name_application(self):
         name = "Test_SAME"
         application1 = self.factory.create_application(name=name, icon_url="", description="Just for test")

@@ -60,13 +60,19 @@ class ApplicationListResource(BaseResource):
 
     @require_permission("list_applications")
     def get(self):
-        applications = models.Application.all(self.current_org)
+        search_term = request.args.get("q")
+        if search_term:
+            applications = models.Application.search(self.current_org, search_term)
+            self.record_event(
+                {"action": "search", "object_type": "application", "term": search_term}
+            )
+        else:
+            applications = models.Application.all(self.current_org)
+            self.record_event(
+                {"action": "list", "object_id": "applications", "object_type": "application"}
+            )
 
-        self.record_event(
-            {"action": "list", "object_id": "applications", "object_type": "application"}
-        )
-
-        ordered_results = order_results(applications)
+        ordered_results = order_results(applications, fallback=not bool(search_term))
 
         page = request.args.get("page", 1, type=int)
         page_size = request.args.get("page_size", 25, type=int)

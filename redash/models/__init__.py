@@ -1439,6 +1439,21 @@ class Application(TimestampMixin, BelongsToOrgMixin, db.Model):
         db.session.add(self)
         db.session.commit()
 
+    @classmethod
+    def search(
+        cls,
+        org,
+        term,
+        limit=None,
+    ):
+        pattern = "%{}%".format(term)
+        return (
+            cls.all(org).filter(
+            or_(cls.name.ilike(pattern), cls.description.ilike(pattern)))
+            .order_by(Application.id.desc())
+            .limit(limit)
+        )
+
 @generic_repr("id", "application_id", "dashoard_id", "created_by_id")
 class ApplicationDashboard(db.Model):
     # XXX drop id, use application/dashboard as PK
