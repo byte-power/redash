@@ -42,9 +42,9 @@ function useGrantees(url) {
 }
 
 const searchApps = searchTerm =>
-  Application.query({ q: searchTerm })
+  Application.query({ q: searchTerm, page_size: 100 })
     .then(results => {
-      let available = results.filter(app => {
+      let available = results.results.filter(app => {
         return app.active && app.name.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1;
       });
       return available;
@@ -87,7 +87,7 @@ function AppSelect({ onSelect, shouldShowApp }) {
   return (
     <Select
       className="w-100 m-b-10"
-      placeholder="Add apps..."
+      placeholder="Add application..."
       showSearch
       onSearch={setSearchTerm}
       suffixIcon={loadingApps ? <i className="fa fa-spinner fa-pulse" /> : <i className="fa fa-search" />}
