@@ -11,10 +11,18 @@ import { toHuman } from "@/lib/utils";
 
 import "./Parameters.less";
 
-function updateUrl(parameters) {
+function updateUrl(parameters, filterParam) {
   const params = extend({}, location.search);
   parameters.forEach(param => {
-    extend(params, param.toUrlParams());
+    let urlParam = param.toUrlParams();
+    let key = Object.keys(urlParam)[0];
+    if (filterParam) {
+      if (params.hasOwnProperty(key)) {
+        extend(params, urlParam);
+      }
+    } else {
+      extend(params, urlParam);
+    }
   });
   location.setSearch(params, true);
 }
@@ -23,7 +31,7 @@ export default class Parameters extends React.Component {
   static propTypes = {
     parameters: PropTypes.arrayOf(PropTypes.instanceOf(Parameter)),
     editable: PropTypes.bool,
-    hideParam: PropTypes.bool,
+    filterParam: PropTypes.bool,
     disableUrlUpdate: PropTypes.bool,
     onValuesChange: PropTypes.func,
     onPendingValuesChange: PropTypes.func,
@@ -33,7 +41,7 @@ export default class Parameters extends React.Component {
   static defaultProps = {
     parameters: [],
     editable: false,
-    hideParam: false,
+    filterParam: false,
     disableUrlUpdate: false,
     onValuesChange: () => {},
     onPendingValuesChange: () => {},
@@ -42,22 +50,22 @@ export default class Parameters extends React.Component {
 
   constructor(props) {
     super(props);
-    const { parameters } = props;
+    const { parameters, filterParam } = props;
     this.state = { parameters };
     if (!props.disableUrlUpdate) {
-      updateUrl(parameters);
+      updateUrl(parameters, filterParam);
     }
   }
 
   componentDidUpdate = prevProps => {
-    const { parameters, disableUrlUpdate } = this.props;
+    const { parameters, disableUrlUpdate, filterParam } = this.props;
     const parametersChanged = prevProps.parameters !== parameters;
     const disableUrlUpdateChanged = prevProps.disableUrlUpdate !== disableUrlUpdate;
     if (parametersChanged) {
       this.setState({ parameters });
     }
     if ((parametersChanged || disableUrlUpdateChanged) && !disableUrlUpdate) {
-      updateUrl(parameters);
+      updateUrl(parameters, filterParam);
     }
   };
 
@@ -94,12 +102,12 @@ export default class Parameters extends React.Component {
   };
 
   applyChanges = () => {
-    const { onValuesChange, disableUrlUpdate } = this.props;
+    const { onValuesChange, disableUrlUpdate, filterParam } = this.props;
     this.setState(({ parameters }) => {
       const parametersWithPendingValues = parameters.filter(p => p.hasPendingValue);
       forEach(parameters, p => p.applyPendingValue());
       if (!disableUrlUpdate) {
-        updateUrl(parameters);
+        updateUrl(parameters, filterParam);
       }
       onValuesChange(parametersWithPendingValues);
       return { parameters };
@@ -148,11 +156,9 @@ export default class Parameters extends React.Component {
 
   render() {
     const { parameters } = this.state;
-    const { editable, hideParam } = this.props;
+    const { editable, filterParam } = this.props;
     const dirtyParamCount = size(filter(parameters, "hasPendingValue"));
-    if (hideParam) {
-      return <span></span>;
-    }
+    const params = extend({}, location.search);
     return (
       <SortableContainer
         disabled={!editable}
@@ -166,14 +172,26 @@ export default class Parameters extends React.Component {
           className: "parameter-container",
           onKeyDown: dirtyParamCount ? this.handleKeyDown : null,
         }}>
-        {parameters.map((param, index) => (
-          <SortableElement key={param.name} index={index}>
-            <div className="parameter-block" data-editable={editable || null}>
-              {editable && <DragHandle data-test={`DragHandle-${param.name}`} />}
-              {this.renderParameter(param, index)}
-            </div>
-          </SortableElement>
-        ))}
+        {parameters
+          .filter(param => {
+            let urlParam = param.toUrlParams();
+            let key = Object.keys(urlParam)[0];
+            if (filterParam) {
+              if (!params.hasOwnProperty(key)) {
+                return true;
+              }
+            } else {
+              return true;
+            }
+          })
+          .map((param, index) => (
+            <SortableElement key={param.name} index={index}>
+              <div className="parameter-block" data-editable={editable || null}>
+                {editable && <DragHandle data-test={`DragHandle-${param.name}`} />}
+                {this.renderParameter(param, index)}
+              </div>
+            </SortableElement>
+          ))}
         <ParameterApplyButton onClick={this.applyChanges} paramCount={dirtyParamCount} />
       </SortableContainer>
     );
