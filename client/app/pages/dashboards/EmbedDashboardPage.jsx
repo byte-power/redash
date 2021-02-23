@@ -1,20 +1,18 @@
-import { isEmpty } from "lodash";
+import { isEmpty, extend } from "lodash";
 import React from "react";
 import PropTypes from "prop-types";
 
 import routeWithApiKeySession from "@/components/ApplicationArea/routeWithApiKeySession";
-import Link from "@/components/Link";
 import BigMessage from "@/components/BigMessage";
 import PageHeader from "@/components/PageHeader";
 import Parameters from "@/components/Parameters";
 import DashboardGrid from "@/components/dashboards/DashboardGrid";
 import Filters from "@/components/Filters";
 
+import location from "@/services/location";
 import { Dashboard } from "@/services/dashboard";
 import routes from "@/services/routes";
 import { getToken } from "@/lib/utils";
-
-import logoUrl from "@/assets/images/redash_icon_small.png";
 
 import useDashboard from "./hooks/useDashboard";
 
@@ -24,11 +22,19 @@ function EmbedDashboard({ dashboard }) {
   const { globalParameters, filters, setFilters, refreshDashboard, loadWidget, refreshWidget } = useDashboard(
     dashboard
   );
+  const params = extend({}, location.search);
+  let realParams = globalParameters.filter(param => {
+    let urlParam = param.toUrlParams();
+    let key = Object.keys(urlParam)[0];
+    if (!params.hasOwnProperty(key)) {
+      return true;
+    }
+  });
 
   return (
     <div className="container p-t-10 p-b-20">
       <PageHeader title={dashboard.name} />
-      {!isEmpty(globalParameters) && (
+      {realParams.length > 0 && (
         <div className="m-b-10 p-15 bg-white tiled">
           <Parameters parameters={globalParameters} filterParam={true} onValuesChange={refreshDashboard} />
         </div>
