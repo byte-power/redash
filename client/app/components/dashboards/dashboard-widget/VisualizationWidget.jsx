@@ -87,9 +87,6 @@ RefreshIndicator.defaultProps = { refreshStartedAt: null };
 function VisualizationWidgetHeader({ widget, hideHeader, refreshStartedAt, parameters, onParametersUpdate }) {
   const canViewQuery = currentUser.hasPermission("view_query");
 
-  if (hideHeader) {
-    return null;
-  }
   return (
     <React.Fragment>
       <RefreshIndicator refreshStartedAt={refreshStartedAt} />
@@ -98,7 +95,7 @@ function VisualizationWidgetHeader({ widget, hideHeader, refreshStartedAt, param
           <p>
             <QueryLink query={widget.getQuery()} visualization={widget.visualization} readOnly={!canViewQuery} />
           </p>
-          {!isEmpty(widget.getQuery().description) && (
+          {!isEmpty(widget.getQuery().description) && !hideHeader && (
             <HtmlContent className="text-muted markdown query--description">
               {markdown.toHTML(widget.getQuery().description || "")}
             </HtmlContent>
