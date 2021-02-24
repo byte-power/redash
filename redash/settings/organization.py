@@ -52,7 +52,7 @@ DISABLE_PUBLIC_URLS = parse_boolean(
 )
 DISABLE_EMBED_URLS = parse_boolean(os.environ.get("REDASH_DISABLE_EMBED_URLS", "false"))
 EMBED_URLS_EXPIRED_SECONDS = os.environ.get("REDASH_EMBED_URLS_EXPIRED_SECONDS", 10)
-EMBED_API_ACCESS_TOKEN_TTL = os.environ.get("REDASH_EMBED_API_ACCESS_TOKEN_TTL", 300)
+EMBED_API_ACCESS_TOKEN_TTL = os.environ.get("REDASH_EMBED_API_ACCESS_TOKEN_TTL", 600)
 
 settings = {
     "beacon_consent": None,

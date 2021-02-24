@@ -1405,7 +1405,7 @@ class Application(TimestampMixin, BelongsToOrgMixin, db.Model):
     @classmethod
     def get_by_name_and_org(cls, name, org):
         try:
-            application = cls.get_by_org(org).filter(cls.name == name).one()
+            application = cls.get_by_org(org).filter(func.lower(cls.name) == func.lower(name)).one()
         except NoResultFound as e:
             return None
         return application
