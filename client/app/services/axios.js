@@ -33,7 +33,7 @@ export const sessionRefreshInterceptor = createAuthRefreshInterceptor(
     const message = get(error, "response.data.message");
     // TODO: In axios@0.9.1 this check could be replaced with { skipAuthRefresh: true } flag. See axios-auth-refresh docs
     const requestUrl = get(error, "config.url");
-    if (includes(requestUrl, "/dashboards/embed/") && (status === 401 || includes(message, "Please login"))) {
+    if (includes(requestUrl, "access_token=") && (status === 401 || includes(message, "Please login"))) {
       return showReloadPrompt();
     }
     if (error.isAxiosError && (status === 401 || includes(message, "Please login")) && requestUrl !== "api/session") {
