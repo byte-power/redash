@@ -11,6 +11,7 @@ function getErrorMessageByStatus(status, defaultMessage) {
     case 404:
       return "It seems like the page you're looking for cannot be found.";
     case 401:
+      return "Token has expired，please refresh page";
     case 403:
       return "It seems like you don’t have permission to see this page.";
     default:

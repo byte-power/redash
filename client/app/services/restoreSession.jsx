@@ -90,19 +90,23 @@ export function restoreSession() {
   return restoreSessionPromise;
 }
 
+let reloadPromise = null;
 export function showReloadPrompt() {
-  return new Promise(resolve => {
-    Modal.warning({
-      content: "Your token has expired. Please refresh page.",
-      okText: <React.Fragment>Close</React.Fragment>,
-      centered: true,
-      mask: true,
-      maskClosable: false,
-      keyboard: false,
-      onOk: closeModal => {
-        closeModal();
-        resolve();
-      },
+  if (!reloadPromise) {
+    reloadPromise = new Promise(resolve => {
+      Modal.warning({
+        content: "Your token has expired. Please refresh page.",
+        okText: <React.Fragment>Close</React.Fragment>,
+        centered: true,
+        mask: true,
+        maskClosable: false,
+        keyboard: false,
+        onOk: closeModal => {
+          closeModal();
+          resolve();
+        },
+      });
     });
-  });
+  }
+  return reloadPromise;
 }
