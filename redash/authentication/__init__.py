@@ -235,9 +235,9 @@ def get_user_from_access_token(access_token):
         if token.is_valid:
             user = models.ApiUser(access_token, org, [], name="AccessToken: {}".format(access_token), embed=True)
         else:
-            raise Unauthorized("Invalid access token")
+            raise Unauthorized("Invalid access token, Please refresh this page again.")
     except:
-        raise Unauthorized("Invalid access token")
+        raise Unauthorized("Invalid access token, Please refresh this page again.")
     return user
 
 def api_key_load_user_from_request(request):
