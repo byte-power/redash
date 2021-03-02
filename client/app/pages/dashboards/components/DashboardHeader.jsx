@@ -110,10 +110,12 @@ RefreshButton.propTypes = {
 
 function DashboardMoreOptionsButton({ dashboardOptions }) {
   const {
+    showEmbedUrl,
     dashboard,
     setEditingLayout,
     togglePublished,
     archiveDashboard,
+    manageApplicatins,
     managePermissions,
     gridDisabled,
     isDashboardOwnerOrAdmin,
@@ -137,6 +139,11 @@ function DashboardMoreOptionsButton({ dashboardOptions }) {
       placement="bottomRight"
       overlay={
         <Menu data-test="DashboardMoreButtonMenu">
+          {showEmbedUrl && (
+            <Menu.Item>
+              <a onClick={manageApplicatins}>Manage Applications</a>
+            </Menu.Item>
+          )}
           <Menu.Item className={cx({ hidden: gridDisabled })}>
             <a onClick={() => setEditingLayout(true)}>Edit</a>
           </Menu.Item>
@@ -179,7 +186,10 @@ function DashboardControl({ dashboardOptions, headerExtra }) {
   const showRefreshButton = true;
   const showFullscreenButton = !dashboard.is_draft;
   const canShareDashboard = canEditDashboard && !dashboard.is_draft;
-  const showShareButton = !clientConfig.disablePublicUrls && (dashboard.publicAccessEnabled || canShareDashboard);
+  const showShareButton =
+    (!clientConfig.disablePublicUrls || !clientConfig.disableEmbedUrls) &&
+    (dashboard.publicAccessEnabled || canShareDashboard);
+  const showEmbedButton = !clientConfig.disableEmbedUrls;
   const showMoreOptionsButton = canEditDashboard;
   return (
     <div className="dashboard-control">
@@ -204,13 +214,18 @@ function DashboardControl({ dashboardOptions, headerExtra }) {
               <Button
                 className="icon-button m-l-5"
                 type={buttonType(dashboard.publicAccessEnabled)}
-                onClick={showShareDashboardDialog}
+                onClick={showShareDashboardDialog.bind(null, {
+                  showPublicUrl: !clientConfig.disablePublicUrls,
+                  showEmbedUrl: showEmbedButton,
+                })}
                 data-test="OpenShareForm">
                 <i className="zmdi zmdi-share" />
               </Button>
             </Tooltip>
           )}
-          {showMoreOptionsButton && <DashboardMoreOptionsButton dashboardOptions={dashboardOptions} />}
+          {showMoreOptionsButton && (
+            <DashboardMoreOptionsButton dashboardOptions={{ ...dashboardOptions, showEmbedUrl: showEmbedButton }} />
+          )}
         </span>
       )}
     </div>

@@ -2,7 +2,8 @@ import hashlib
 import hmac
 import logging
 import time
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urlsplit, urlunsplit, urlparse, parse_qs, quote
+import collections
 
 from flask import jsonify, redirect, request, url_for
 from flask_login import LoginManager, login_user, logout_user, user_logged_in
@@ -80,31 +81,42 @@ def request_loader(request):
 
 
 def hmac_load_user_from_request(request):
-    signature = request.args.get("signature")
-    expires = float(request.args.get("expires") or 0)
-    query_id = request.view_args.get("query_id", None)
-    user_id = request.args.get("user_id", None)
+    access_token = request.args.get("access_token", None)
+    if access_token and "/api" in request.path:
+        user = get_user_from_access_token(access_token)
+        return user
+    else:
+        signature = request.args.get("signature", None)
+        # embed url request
+        if "/embed/dashboard" in request.path:
+            secret_key = request.args.get("secret_key", None)
+            user = get_user_from_secret_key(secret_key, signature, request)
+            return user
+        else:
+            expires = float(request.args.get("expires") or 0)
+            query_id = request.view_args.get("query_id", None)
+            user_id = request.args.get("user_id", None)
 
-    # TODO: 3600 should be a setting
-    if signature and time.time() < expires <= time.time() + 3600:
-        if user_id:
-            user = models.User.query.get(user_id)
-            calculated_signature = sign(user.api_key, request.path, expires)
+            # TODO: 3600 should be a setting
+            if signature and time.time() < expires <= time.time() + 3600:
+                if user_id:
+                    user = models.User.query.get(user_id)
+                    calculated_signature = sign(user.api_key, request.path, expires)
 
-            if user.api_key and signature == calculated_signature:
-                return user
+                    if user.api_key and signature == calculated_signature:
+                        return user
 
-        if query_id:
-            query = models.Query.query.filter(models.Query.id == query_id).one()
-            calculated_signature = sign(query.api_key, request.path, expires)
+                if query_id:
+                    query = models.Query.query.filter(models.Query.id == query_id).one()
+                    calculated_signature = sign(query.api_key, request.path, expires)
 
-            if query.api_key and signature == calculated_signature:
-                return models.ApiUser(
-                    query.api_key,
-                    query.org,
-                    list(query.groups.keys()),
-                    name="ApiKey: Query {}".format(query.id),
-                )
+                    if query.api_key and signature == calculated_signature:
+                        return models.ApiUser(
+                            query.api_key,
+                            query.org,
+                            list(query.groups.keys()),
+                            name="ApiKey: Query {}".format(query.id),
+                        )
 
     return None
 
@@ -150,18 +162,103 @@ def get_api_key_from_request(request):
         api_key = auth_header.replace("Key ", "", 1)
     elif request.view_args is not None and request.view_args.get("token"):
         api_key = request.view_args["token"]
-
     return api_key
 
+def encode_params(params):
+    order_params = collections.OrderedDict(sorted(params.items()))
+    query = list(order_params.items())
+    ps = []
+    for k, v in query:
+        k = quote(str(k))
+        if isinstance(v, str):
+            v = v.encode('utf8')
+        v = quote(v)
+        ps.append(k + '=' + v)
+    return "&".join(ps)
+
+def get_want_to_signature_url(url):
+    o = urlparse(url)
+    params_list = parse_qs(o.query, keep_blank_values=True)
+    params = {k: v[0] for k, v in params_list.items()}
+    params.pop("signature", None)
+    s = encode_params(params)
+    return o._replace(query=s).geturl()
+
+def get_embed_signature(secret_token, url, timestamp):
+    request_method = "GET"
+    content_type = ""
+    content_constant = "1B2M2Y8AsgTpgAmY7PhCfg=="
+    request_string = ','.join([request_method, content_type, content_constant, url, str(timestamp)])
+    signature = hmac.new(secret_token.encode(), msg=request_string.encode(), digestmod=hashlib.sha256).hexdigest()
+    return signature
+
+def check_embed_signature(request, secret_token, timestamp, signature):
+    url = get_want_to_signature_url(request.url)
+    s = get_embed_signature(secret_token, url, timestamp)
+    return s == signature
+
+def get_user_from_secret_key(secret_key, signature, request):
+    if not all([secret_key, signature]):
+        raise Unauthorized("Invalid embed request")
+
+    timestamp = request.args.get("timestamp", None)
+    if not timestamp:
+        raise Unauthorized("Lost timestamp")
+
+    now = int(time.time())
+    timestamp = int(timestamp)
+    ttl = int(org_settings["embed_urls_expired_seconds"])
+    if (timestamp + ttl <  now) or (timestamp - ttl > now):
+        raise Unauthorized("Invalid timestamp")
+
+    user = None
+    org = current_org._get_current_object()
+    try:
+        application = models.Application.get_by_secret_key(secret_key)
+    except models.NoResultFound:
+        raise Unauthorized("Unknown application")
+    else:
+        if application.is_active:
+            if check_embed_signature(request, application.secret_token, timestamp, signature):
+                user = models.ApiUser(application.id, org, [], name="Application: {}".format(application.name))
+            else:
+                raise Unauthorized("Invalid serect token")
+        else:
+            raise Unauthorized("Inactive appclication")
+    return user
+
+def get_user_from_access_token(access_token):
+    user = None
+    org = current_org._get_current_object()
+    try:
+        token = models.AccessToken(access_token)
+        if token.is_valid:
+            user = models.ApiUser(access_token, org, [], name="AccessToken: {}".format(access_token), embed=True)
+        else:
+            raise Unauthorized("Invalid access token, Please refresh this page again.")
+    except:
+        raise Unauthorized("Invalid access token, Please refresh this page again.")
+    return user
 
 def api_key_load_user_from_request(request):
-    api_key = get_api_key_from_request(request)
-    if request.view_args is not None:
-        query_id = request.view_args.get("query_id", None)
-        user = get_user_from_api_key(api_key, query_id)
+    access_token = request.args.get("access_token", None)
+    # embed api request
+    if access_token and "/api" in request.path:
+        user = get_user_from_access_token(access_token)
     else:
-        user = None
-
+        # embed url request
+        if "/embed/dashboard" in request.path:
+            signature = request.args.get("signature", None)
+            secret_key = request.args.get("secret_key", None)
+            user = get_user_from_secret_key(secret_key, signature, request)
+        # original redash request
+        else:
+            api_key = get_api_key_from_request(request)
+            if request.view_args is not None:
+                query_id = request.view_args.get("query_id", None)
+                user = get_user_from_api_key(api_key, query_id)
+            else:
+                user = None
     return user
 
 

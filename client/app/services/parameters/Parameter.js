@@ -12,7 +12,7 @@ class Parameter {
     this.locals = [];
 
     // Used for URL serialization
-    this.urlPrefix = "p_";
+    this.urlPrefix = "param_";
   }
 
   static getExecutionValue(param, extra = {}) {

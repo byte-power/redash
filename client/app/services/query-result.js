@@ -3,6 +3,7 @@ import moment from "moment";
 import { axios } from "@/services/axios";
 import { QueryResultError } from "@/services/query";
 import { Auth } from "@/services/auth";
+import { getToken } from "@/lib/utils";
 import { isString, uniqBy, each, isNumber, includes, extend, forOwn, get } from "lodash";
 
 const logger = debug("redash:services:QueryResult");
@@ -348,9 +349,9 @@ class QueryResult {
     return queryResult;
   }
 
-  loadLatestCachedResult(queryId, parameters) {
+  loadLatestCachedResult(queryId, parameters, token, applyAutoLimit) {
     axios
-      .post(`api/queries/${queryId}/results`, { queryId, parameters })
+      .post(`api/queries/${queryId}/results` + token, { queryId, parameters, apply_auto_limit: applyAutoLimit })
       .then(response => {
         this.update(response);
       })
@@ -390,13 +391,16 @@ class QueryResult {
       });
   }
 
-  refreshStatus(query, parameters, tryNumber = 1) {
+  refreshStatus(query, parameters, tryNumber = 1, applyAutoLimit) {
+    let token = getToken();
     const loadResult = () =>
-      Auth.isAuthenticated() ? this.loadResult() : this.loadLatestCachedResult(query, parameters);
+      Auth.isAuthenticated()
+        ? this.loadResult()
+        : this.loadLatestCachedResult(query, parameters, token, applyAutoLimit);
 
     const request = Auth.isAuthenticated()
       ? axios.get(`api/jobs/${this.job.id}`)
-      : axios.get(`api/queries/${query}/jobs/${this.job.id}`);
+      : axios.get(`api/queries/${query}/jobs/${this.job.id}` + token);
 
     request
       .then(jobResponse => {
@@ -407,7 +411,7 @@ class QueryResult {
         } else if (this.getStatus() !== "failed") {
           const waitTime = tryNumber > 10 ? 3000 : 500;
           setTimeout(() => {
-            this.refreshStatus(query, parameters, tryNumber + 1);
+            this.refreshStatus(query, parameters, tryNumber + 1, applyAutoLimit);
           }, waitTime);
         }
       })
@@ -435,16 +439,20 @@ class QueryResult {
     return `${queryName.replace(/ /g, "_") + moment(this.getUpdatedAt()).format("_YYYY_MM_DD")}.${fileType}`;
   }
 
-  static getByQueryId(id, parameters, applyAutoLimit, maxAge) {
+  static getByQueryId(id, parameters, applyAutoLimit, maxAge, token) {
     const queryResult = new QueryResult();
-
     axios
-      .post(`api/queries/${id}/results`, { id, parameters, apply_auto_limit: applyAutoLimit, max_age: maxAge })
+      .post(`api/queries/${id}/results` + token, {
+        id,
+        parameters,
+        apply_auto_limit: applyAutoLimit,
+        max_age: maxAge,
+      })
       .then(response => {
         queryResult.update(response);
 
         if ("job" in response) {
-          queryResult.refreshStatus(id, parameters);
+          queryResult.refreshStatus(id, parameters, null, applyAutoLimit);
         }
       })
       .catch(error => {

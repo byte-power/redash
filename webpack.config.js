@@ -34,7 +34,7 @@ const isDevelopment = !isProduction;
 const isHotReloadingEnabled =
   isDevelopment && process.env.HOT_RELOAD === "true";
 
-const redashBackend = process.env.REDASH_BACKEND || "http://localhost:5000";
+const redashBackend = CONFIG.backend || "http://localhost:5000";
 const baseHref = CONFIG.baseHref || "/";
 const staticPath = CONFIG.staticPath || "/static/";
 const htmlTitle = CONFIG.title || "Redash";
@@ -113,6 +113,7 @@ const config = {
       { from: "client/app/assets/robots.txt" },
       { from: "client/app/unsupported.html" },
       { from: "client/app/unsupportedRedirect.js" },
+      { from: "client/app/iframeResizer.contentWindow.min.js" },
       { from: "client/app/assets/css/*.css", to: "styles/", flatten: true },
       { from: "client/app/assets/fonts", to: "fonts/" }
     ]),

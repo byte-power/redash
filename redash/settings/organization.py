@@ -50,6 +50,9 @@ HIDE_PLOTLY_MODE_BAR = parse_boolean(os.environ.get("HIDE_PLOTLY_MODE_BAR", "fal
 DISABLE_PUBLIC_URLS = parse_boolean(
     os.environ.get("REDASH_DISABLE_PUBLIC_URLS", "false")
 )
+DISABLE_EMBED_URLS = parse_boolean(os.environ.get("REDASH_DISABLE_EMBED_URLS", "false"))
+EMBED_URLS_EXPIRED_SECONDS = os.environ.get("REDASH_EMBED_URLS_EXPIRED_SECONDS", 10)
+EMBED_API_ACCESS_TOKEN_TTL = os.environ.get("REDASH_EMBED_API_ACCESS_TOKEN_TTL", 600)
 
 settings = {
     "beacon_consent": None,
@@ -77,4 +80,7 @@ settings = {
     "send_email_on_failed_scheduled_queries": SEND_EMAIL_ON_FAILED_SCHEDULED_QUERIES,
     "hide_plotly_mode_bar": HIDE_PLOTLY_MODE_BAR,
     "disable_public_urls": DISABLE_PUBLIC_URLS,
+    "disable_embed_urls": DISABLE_EMBED_URLS,
+    "embed_urls_expired_seconds": EMBED_URLS_EXPIRED_SECONDS,
+    "embed_api_access_token_ttl": EMBED_API_ACCESS_TOKEN_TTL,
 }

@@ -3,9 +3,11 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="UTF-8" />
+    <meta name="access-token" content="{{access_token}}" />
     <base href="<%= htmlWebpackPlugin.options.baseHref %>" />
     <title><%= htmlWebpackPlugin.options.title %></title>
     <script src="<%= htmlWebpackPlugin.options.staticPath %>unsupportedRedirect.js" async></script>
+    <script src="<%= htmlWebpackPlugin.options.staticPath %>iframeResizer.contentWindow.min.js" ></script>
 
     <link
       rel="icon"

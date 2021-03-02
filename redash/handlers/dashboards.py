@@ -15,6 +15,7 @@ from redash.permissions import (
     require_admin_or_owner,
     require_object_modify_permission,
     require_permission,
+    require_admin,
 )
 from redash.security import csp_allows_embeding
 from redash.serializers import (
@@ -279,6 +280,57 @@ class PublicDashboardResource(BaseResource):
 
         return public_dashboard(dashboard)
 
+class EmbedDashboardResource(BaseResource):
+
+    def get(self, dashboard_id):
+        """
+        Retrieve a embed dashboard.
+
+        :qparam number id: Id of dashboard to retrieve
+        :>json array widgets: An array of arrays of :ref:`embed widgets <public-widget-label>`, corresponding to the rows and columns the widgets are displayed in
+        """
+        if self.current_org.get_setting("disable_embed_urls"):
+            abort(400, message="Embed URLs are disabled.")
+
+        if request.args.get("legacy") is not None:
+            fn = models.Dashboard.get_by_slug_and_org
+        else:
+            fn = models.Dashboard.get_by_id_and_org
+
+        dashboard = get_object_or_404(fn, dashboard_id, self.current_org)
+    
+        return public_dashboard(dashboard)
+
+
+class EmbedDashboardListResource(BaseResource):
+    @require_admin
+    def get(self):
+        """
+        Lists all dashboards except archived and draft.
+
+        :qparam number page_size: Number of queries to return per page
+        :qparam number page: Page number to retrieve
+        :qparam number order: Name of column to order by
+        """
+
+        results = models.Dashboard.get_all(self.current_org)
+        results = filter_by_tags(results, models.Dashboard.tags)
+
+        ordered_results = order_results(results)
+
+        page = request.args.get("page", 1, type=int)
+        page_size = request.args.get("page_size", 25, type=int)
+
+        response = paginate(
+            ordered_results,
+            page=page,
+            page_size=page_size,
+            serializer=DashboardSerializer,
+        )
+
+        self.record_event({"action": "list", "object_type": "dashboard"})
+
+        return response
 
 class DashboardShareResource(BaseResource):
     def post(self, dashboard_id):

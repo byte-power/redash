@@ -55,6 +55,7 @@ from .types import (
     pseudo_json_cast_property
 )
 from .users import AccessPermission, AnonymousUser, ApiUser, Group, User  # noqa
+from .access_token import AccessToken
 
 logger = logging.getLogger(__name__)
 
@@ -317,7 +318,6 @@ class DBPersistence(object):
 QueryResultPersistence = (
     settings.dynamic_settings.QueryResultPersistence or DBPersistence
 )
-
 
 @generic_repr("id", "org_id", "data_source_id", "query_hash", "runtime", "retrieved_at")
 class QueryResult(db.Model, QueryResultPersistence, BelongsToOrgMixin):
@@ -1100,11 +1100,24 @@ class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model
         "tags", MutableList.as_mutable(postgresql.ARRAY(db.Unicode)), nullable=True
     )
 
+    dashboard_applications = db.relationship(
+        "ApplicationDashboard", back_populates="dashboard", cascade="all"
+    )
+
     __tablename__ = "dashboards"
     __mapper_args__ = {"version_id_col": version}
 
     def __str__(self):
         return "%s=%s" % (self.id, self.name)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "slug": self.slug,
+            "name": self.name,
+            "user_id": self.user_id,
+            "is_archived": self.is_archived,
+        }
 
     @property
     def name_as_slug(self):
@@ -1139,6 +1152,17 @@ class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model
             or_(Dashboard.user_id == user_id, Dashboard.is_draft == False)
         )
 
+        return query
+
+    @classmethod
+    def get_all(cls, org):
+        query = (
+            Dashboard.query.filter(
+                Dashboard.is_archived == False,
+                Dashboard.is_draft == False,
+                Dashboard.org == org,
+            )
+        )
         return query
 
     @classmethod
@@ -1341,6 +1365,159 @@ class ApiKey(TimestampMixin, GFKBase, db.Model):
         db.session.add(k)
         return k
 
+@generic_repr("id", "name", "created_by_id", "org_id", "active")
+class Application(TimestampMixin, BelongsToOrgMixin, db.Model):
+    id = primary_key("Application")
+    org_id = Column(key_type("Organization"), db.ForeignKey("organizations.id"))
+    org = db.relationship(Organization)
+    name = Column(db.String(100))
+    secret_key = Column(db.String(255), index=True, default=lambda: generate_token(24))
+    secret_token = Column(db.String(255), default=lambda: generate_token(24))
+    active = Column(db.Boolean, default=True)
+    icon_url = Column("icon_url", db.String(320), nullable=True)
+    description = Column(db.Text, nullable=True)
+    created_by_id = Column(key_type("User"), db.ForeignKey("users.id"), nullable=True)
+    created_by = db.relationship(User)
+
+    application_dashboards = db.relationship(
+        "ApplicationDashboard", back_populates="application", cascade="all"
+    )
+
+
+    __tablename__ = "applications"
+    __table_args__ = (
+        db.Index("applications_org_id_name", "org_id", "name", unique=True),
+        db.Index("applications_secret_key", "secret_key", unique=True),
+    )
+
+    @classmethod
+    def all(cls, org):
+        return cls.query.filter(cls.org == org)
+
+    @property
+    def is_active(self):
+        return self.active == True
+
+    @classmethod
+    def get_by_org(cls, org):
+        return cls.query.filter(cls.org == org)
+
+    @classmethod
+    def get_by_name_and_org(cls, name, org):
+        try:
+            application = cls.get_by_org(org).filter(func.lower(cls.name) == func.lower(name)).one()
+        except NoResultFound as e:
+            return None
+        return application
+
+    @classmethod
+    def get_by_secret_key_and_org(cls, secret_key, org):
+        return cls.get_by_org(org).filter(cls.secret_key == secret_key).one()
+
+    @classmethod
+    def get_by_secret_key(cls, secret_key):
+        return cls.query.filter(cls.secret_key == secret_key).one()
+
+    def to_dict(self, hide_token=True):
+        def hide_secret_token(token):
+            return token[:4] + "*" * (len(token) - 8) + token[-4:]
+
+        return {
+            "id": self.id,
+            "name": self.name,
+            "secret_key": self.secret_key,
+            "secret_token": hide_secret_token(self.secret_token) if hide_token else self.secret_token,
+            "icon_url": self.icon_url,
+            "active": self.active,
+            "description": self.description,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
+
+    def regenerate_secret_token(self):
+        self.secret_token = generate_token(24)
+        db.session.add(self)
+        db.session.commit()
+
+    @classmethod
+    def search(
+        cls,
+        org,
+        term,
+        limit=None,
+    ):
+        pattern = "%{}%".format(term)
+        return (
+            cls.all(org).filter(
+            or_(cls.name.ilike(pattern), cls.description.ilike(pattern)))
+            .order_by(Application.id.desc())
+            .limit(limit)
+        )
+
+@generic_repr("id", "application_id", "dashoard_id", "created_by_id")
+class ApplicationDashboard(db.Model):
+    # XXX drop id, use application/dashboard as PK
+    id = primary_key("ApplicationDashboard")
+    application_id = Column(key_type("Application"), db.ForeignKey("applications.id"))
+    application = db.relationship(Application, back_populates="application_dashboards")
+    dashboard_id = Column(key_type("Dashboard"), db.ForeignKey("dashboards.id"))
+    dashboard = db.relationship(Dashboard, back_populates="dashboard_applications")
+    created_by_id = Column(key_type("User"), db.ForeignKey("users.id"), nullable=True)
+    created_by = db.relationship(User)
+
+    __tablename__ = "application_dashboards"
+
+    __table_args__ = (
+        db.Index("applications_dashboards", "application_id", "dashboard_id", unique=True),
+    )
+
+    @classmethod
+    def get_dashboards_by_application_id(cls, application_id):
+        dashboards = Dashboard.query.join(ApplicationDashboard).filter(
+                ApplicationDashboard.application_id == application_id
+                )
+
+        return [dashboard.to_dict() for dashboard in dashboards]
+
+    @classmethod
+    def get_applications_by_dashboard_id(cls, dashboard_id):
+        applications = Application.query.join(ApplicationDashboard).filter(
+            ApplicationDashboard.dashboard_id == dashboard_id, 
+            Application.active == True
+        )
+        return [application.to_dict() for application in applications]
+
+    @classmethod
+    def add_dashboard_to_application(cls, dashboard_id, application_id, user=None):
+        if cls.check_dashboard_in_application(application_id, dashboard_id):
+            return
+        rv = cls(
+           application_id = application_id,
+           dashboard_id = dashboard_id,
+           created_by_id =  user.id if user else None
+        )
+        res = db.session.add(rv)
+        db.session.commit()
+        return
+
+    @classmethod
+    def delete_dashboard_from_application(cls, dashboard_id, application_id):
+        ApplicationDashboard.query.filter(
+            ApplicationDashboard.application_id == application_id,
+            ApplicationDashboard.dashboard_id == dashboard_id
+        ).delete()
+        db.session.commit()
+
+    @classmethod
+    def check_dashboard_in_application(cls, application_id, dashboard_id):
+        try:
+            m = ApplicationDashboard.query.filter(
+                ApplicationDashboard.application_id == application_id,
+                ApplicationDashboard.dashboard_id == dashboard_id
+            ).one()
+        except NoResultFound as e:
+            return False
+        return True if m is not None else False
 
 @generic_repr("id", "name", "type", "user_id", "org_id", "created_at")
 class NotificationDestination(BelongsToOrgMixin, db.Model):

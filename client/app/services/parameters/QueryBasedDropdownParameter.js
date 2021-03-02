@@ -67,9 +67,10 @@ class QueryBasedDropdownParameter extends Parameter {
 
   loadDropdownValues() {
     if (this.parentQueryId) {
-      return Query.associatedDropdown({ queryId: this.parentQueryId, dropdownQueryId: this.queryId }).catch(() =>
-        Promise.resolve([])
-      );
+      return Query.associatedDropdown({
+        queryId: this.parentQueryId,
+        dropdownQueryId: this.queryId,
+      }).catch(() => Promise.resolve([]));
     }
 
     return Query.asDropdown({ id: this.queryId }).catch(Promise.resolve([]));

@@ -2,6 +2,7 @@ import moment from "moment";
 import debug from "debug";
 import Mustache from "mustache";
 import { axios } from "@/services/axios";
+import { getToken } from "@/lib/utils";
 import {
   zipObject,
   isEmpty,
@@ -133,7 +134,13 @@ export class Query {
 
   getQueryResult(maxAge) {
     const execute = () =>
-      QueryResult.getByQueryId(this.id, this.getParameters().getExecutionValues(), this.getAutoLimit(), maxAge);
+      QueryResult.getByQueryId(
+        this.id,
+        this.getParameters().getExecutionValues(),
+        this.getAutoLimit(),
+        maxAge,
+        getToken()
+      );
     return this.prepareQueryResultExecution(execute, maxAge);
   }
 
@@ -389,8 +396,9 @@ const QueryService = {
   fork: ({ id }) => axios.post(`api/queries/${id}/fork`, { id }).then(getQuery),
   resultById: data => axios.get(`api/queries/${data.id}/results.json`),
   asDropdown: data => axios.get(`api/queries/${data.id}/dropdown`),
-  associatedDropdown: ({ queryId, dropdownQueryId }) =>
-    axios.get(`api/queries/${queryId}/dropdowns/${dropdownQueryId}`),
+  associatedDropdown: ({ queryId, dropdownQueryId }) => {
+    return axios.get(`api/queries/${queryId}/dropdowns/${dropdownQueryId}` + getToken());
+  },
   favorites: params => axios.get("api/queries/favorites", { params }).then(mapResults),
   favorite: data => axios.post(`api/queries/${data.id}/favorite`),
   unfavorite: data => axios.delete(`api/queries/${data.id}/favorite`),

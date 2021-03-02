@@ -9,6 +9,7 @@ import recordEvent from "@/services/recordEvent";
 import { QueryResultError } from "@/services/query";
 import AddWidgetDialog from "@/components/dashboards/AddWidgetDialog";
 import TextboxDialog from "@/components/dashboards/TextboxDialog";
+import AppEditorDialog from "@/components/AppEditorDialog";
 import PermissionsEditorDialog from "@/components/PermissionsEditorDialog";
 import { editableMappingsToParameterMappings, synchronizeWidgetTitles } from "@/components/ParameterMappingInput";
 import ShareDashboardDialog from "../components/ShareDashboardDialog";
@@ -52,6 +53,14 @@ function useDashboard(dashboardData) {
     () => every(dashboard.widgets, w => (w.getQuery() ? w.getQuery().is_safe : true)),
     [dashboard]
   );
+
+  const manageApplicatins = useCallback(() => {
+    const aclUrl = `api/dashboards/${dashboard.id}/applications`;
+    AppEditorDialog.showModal({
+      aclUrl,
+      context: "dashboard",
+    });
+  }, [dashboard]);
 
   const managePermissions = useCallback(() => {
     const aclUrl = `api/dashboards/${dashboard.id}/acl`;
@@ -100,8 +109,9 @@ function useDashboard(dashboardData) {
   const loadWidget = useCallback((widget, forceRefresh = false) => {
     widget.getParametersDefs(); // Force widget to read parameters values from URL
     setDashboard(currentDashboard => extend({}, currentDashboard));
+    const { max_age } = location.search;
     return widget
-      .load(forceRefresh)
+      .load(forceRefresh, max_age)
       .catch(error => {
         // QueryResultErrors are expected
         if (error instanceof QueryResultError) {
@@ -158,16 +168,21 @@ function useDashboard(dashboardData) {
     );
   }, [dashboard]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const showShareDashboardDialog = useCallback(() => {
-    const handleDialogClose = () => setDashboard(currentDashboard => extend({}, currentDashboard));
+  const showShareDashboardDialog = useCallback(
+    param => {
+      const handleDialogClose = () => setDashboard(currentDashboard => extend({}, currentDashboard));
 
-    ShareDashboardDialog.showModal({
-      dashboard,
-      hasOnlySafeQueries,
-    })
-      .onClose(handleDialogClose)
-      .onDismiss(handleDialogClose);
-  }, [dashboard, hasOnlySafeQueries]);
+      ShareDashboardDialog.showModal({
+        dashboard,
+        showPublic: !!param.showPublicUrl,
+        showEmbed: !!param.showEmbedUrl,
+        hasOnlySafeQueries,
+      })
+        .onClose(handleDialogClose)
+        .onDismiss(handleDialogClose);
+    },
+    [dashboard, hasOnlySafeQueries]
+  );
 
   const showAddTextboxDialog = useCallback(() => {
     TextboxDialog.showModal({
@@ -242,6 +257,7 @@ function useDashboard(dashboardData) {
     showShareDashboardDialog,
     showAddTextboxDialog,
     showAddWidgetDialog,
+    manageApplicatins,
     managePermissions,
   };
 }

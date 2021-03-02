@@ -4,12 +4,15 @@ import time
 
 from flask import request
 from mock import patch
+from werkzeug.exceptions import Unauthorized
 from redash import models, settings
 from redash.authentication import (
     api_key_load_user_from_request,
     get_login_url,
     hmac_load_user_from_request,
     sign,
+    get_embed_signature,
+    encode_params,
 )
 from redash.authentication import create_and_login_user
 from redash.authentication.google_oauth import verify_profile as google_verify_profile
@@ -154,6 +157,124 @@ class TestHMACAuthentication(BaseTestCase):
                 },
             )
             self.assertEqual(user.id, hmac_load_user_from_request(request).id)
+
+
+class TestApplicationAuthentication(BaseTestCase):
+    #
+    # This is a bad way to write these tests, but the way Flask works doesn't make it easy to write them properly...
+    #
+    def setUp(self):
+        super(TestApplicationAuthentication, self).setUp()
+        self.dashboard = self.factory.create_dashboard()
+        self.application = self.factory.create_application()
+        models.db.session.flush()
+        self.basic_embed_url = "http://localhost/{}/embed/dashboard/{}".format(self.factory.org.slug, self.dashboard.id)
+
+    def test_success(self):
+        timestamp = int(time.time())
+        params = {
+            "secret_key": self.application.secret_key,
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
+        signature = get_embed_signature(self.application.secret_token, url, timestamp)
+        path = "{}&signature={}".format(url, signature)
+        with self.app.test_client() as c:
+            rv = c.get(path)
+            self.assertIsNotNone(api_key_load_user_from_request(request))
+
+    def test_application_no_exist_api_key(self):
+        timestamp = int(time.time())
+        params = {
+            "secret_key": "no-exsit-api-key",
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
+        signature = get_embed_signature(self.application.secret_token, url, timestamp)
+        path = "{}&signature={}".format(url, signature)
+        with self.app.test_client() as c:
+            rv = c.get(path)
+            try:
+                user = api_key_load_user_from_request(request)
+            except Unauthorized as e:
+                self.assertEqual(type(e), Unauthorized)
+            else:
+                self.assertTrue(False)
+
+    def test_no_secret_key(self):
+        timestamp = int(time.time())
+        params = {
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
+        signature = get_embed_signature(self.application.secret_token, url, timestamp)
+        path = "{}&signature={}".format(url, signature)
+        with self.app.test_client() as c:
+            rv = c.get(path)
+            try:
+                user = api_key_load_user_from_request(request)
+            except Unauthorized as e:
+                self.assertEqual(type(e), Unauthorized)
+            else:
+                self.assertTrue(False)
+
+    def test_no_secret_key_and_signature(self):
+        timestamp = int(time.time())
+        params = {
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
+        with self.app.test_client() as c:
+            rv = c.get(url)
+            try:
+                user = api_key_load_user_from_request(request)
+            except Unauthorized as e:
+                self.assertEqual(type(e), Unauthorized)
+            else:
+                self.assertTrue(False)
+
+    def test_application_wrong_api_serect(self):
+        timestamp = int(time.time())
+        params = {
+            "secret_key": self.application.secret_key,
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
+        signature = get_embed_signature("wrong-application-api-serect", url, timestamp)
+        path = "{}&signature={}".format(url, signature)
+        with self.app.test_client() as c:
+            rv = c.get(path)
+            try:
+                user = api_key_load_user_from_request(request)
+            except Unauthorized as e:
+                self.assertEqual(type(e), Unauthorized)
+            else:
+                self.assertTrue(False)
+
+    def test_application_deactive(self):
+        application = self.factory.create_application(name='test_application_deactive', active=False)
+        timestamp = int(time.time())
+        params = {
+            "secret_key": application.secret_key,
+            "timestamp": str(timestamp),
+        }
+        s = encode_params(params)
+        url = "?".join([self.basic_embed_url, s])
+        signature = get_embed_signature(application.secret_token, url, timestamp)
+        path = "{}&signature={}".format(url, signature)
+        with self.app.test_client() as c:
+            rv = c.get(path)
+            try:
+                user = api_key_load_user_from_request(request)
+            except Unauthorized as e:
+                self.assertEqual(type(e), Unauthorized)
+            else:
+                self.assertIsNone(user)
 
 
 class TestSessionAuthentication(BaseTestCase):

@@ -65,7 +65,7 @@ export const Auth = {
   login() {
     const next = encodeURI(location.url);
     logger("Calling login with next = %s", next);
-    window.location.href = `${AuthUrls.Login}?next=${next}`;
+    window.location.href = `${AuthUrls.Login}`;
   },
   logout() {
     logger("Logout.");
