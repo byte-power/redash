@@ -3,7 +3,7 @@ import axiosLib from "axios";
 import createAuthRefreshInterceptor from "axios-auth-refresh";
 import { Auth } from "@/services/auth";
 import qs from "query-string";
-import { restoreSession, showReloadPrompt } from "@/services/restoreSession";
+import { restoreSession } from "@/services/restoreSession";
 
 export const axios = axiosLib.create({
   paramsSerializer: params => qs.stringify(params),

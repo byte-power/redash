@@ -49,8 +49,8 @@ function EmbedDashboard({ dashboard }) {
           dashboard={dashboard}
           widgets={dashboard.widgets}
           filters={filters}
-          hideHeader={true}
           isEditing={false}
+          isEmbed
           isPublic
           onLoadWidget={loadWidget}
           onRefreshWidget={refreshWidget}

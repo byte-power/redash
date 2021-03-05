@@ -84,7 +84,7 @@ function RefreshIndicator({ refreshStartedAt }) {
 RefreshIndicator.propTypes = { refreshStartedAt: Moment };
 RefreshIndicator.defaultProps = { refreshStartedAt: null };
 
-function VisualizationWidgetHeader({ widget, hideHeader, refreshStartedAt, parameters, onParametersUpdate }) {
+function VisualizationWidgetHeader({ widget, isEmbed, refreshStartedAt, parameters, onParametersUpdate }) {
   const canViewQuery = currentUser.hasPermission("view_query");
 
   return (
@@ -95,7 +95,7 @@ function VisualizationWidgetHeader({ widget, hideHeader, refreshStartedAt, param
           <p>
             <QueryLink query={widget.getQuery()} visualization={widget.visualization} readOnly={!canViewQuery} />
           </p>
-          {!isEmpty(widget.getQuery().description) && !hideHeader && (
+          {!isEmpty(widget.getQuery().description) && !isEmbed && (
             <HtmlContent className="text-muted markdown query--description">
               {markdown.toHTML(widget.getQuery().description || "")}
             </HtmlContent>
@@ -187,7 +187,7 @@ class VisualizationWidget extends React.Component {
     widget: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
     dashboard: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
     filters: FiltersType,
-    hideHeader: PropTypes.bool,
+    isEmbed: PropTypes.bool,
     isPublic: PropTypes.bool,
     isLoading: PropTypes.bool,
     canEdit: PropTypes.bool,
@@ -285,7 +285,7 @@ class VisualizationWidget extends React.Component {
   }
 
   render() {
-    const { widget, isLoading, hideHeader, isPublic, canEdit, onRefresh } = this.props;
+    const { widget, isLoading, isEmbed, isPublic, canEdit, onRefresh } = this.props;
     const { localParameters } = this.state;
     const widgetQueryResult = widget.getQueryResult();
     const isRefreshing = isLoading && !!(widgetQueryResult && widgetQueryResult.getStatus());
@@ -302,7 +302,7 @@ class VisualizationWidget extends React.Component {
         header={
           <VisualizationWidgetHeader
             widget={widget}
-            hideHeader={hideHeader}
+            isEmbed={isEmbed}
             refreshStartedAt={isRefreshing ? widget.refreshStartedAt : null}
             parameters={localParameters}
             onParametersUpdate={onRefresh}
