@@ -288,6 +288,24 @@ class QueryResultResource(BaseResource):
         )
 
         allow_executing_with_view_only_permissions = query.parameterized.is_safe
+
+        def check_sql_injection(parameters, parameter_values):
+            special_chars = [";", "'"]
+            for parameter in parameters:
+                type_ = parameter.get("type")
+                name = parameter.get("name")
+                if type_ == "text" and name:
+                    value = parameter_values.get(name)
+                    if not value:
+                        continue
+                    include_chars = [char for char in special_chars if char in value]
+                    if include_chars:
+                        return True
+            return False
+
+        if self.current_user.is_embed:
+            allow_executing_with_view_only_permissions = not check_sql_injection(query.parameters, parameter_values)
+
         should_apply_auto_limit = params.get("apply_auto_limit", False)
 
         if has_access(
