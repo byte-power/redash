@@ -393,6 +393,25 @@ class TestQueryResultAPI(BaseTestCase):
         )
         self.assertEqual(rv.status_code, 404)
 
+    def test_query_embed_and_different_query_result(self):
+        ds = self.factory.create_data_source(
+            group=self.factory.org.default_group, view_only=False
+        )
+        query = self.factory.create_query(query_text="SELECT 8")
+        query_result2 = self.factory.create_query_result(
+            data_source=ds, query_hash="something-different"
+        )
+        access_token = self.factory.create_access_token()
+
+        rv = self.make_request(
+            "get",
+            "/api/queries/{}/results/{}.json?access_token={}".format(
+                query.id, query_result2.id, access_token
+            ),
+            user=False,
+        )
+        self.assertEqual(rv.status_code, 200)
+
     def test_signed_in_user_and_different_query_result(self):
         ds2 = self.factory.create_data_source(
             group=self.factory.org.admin_group, view_only=False

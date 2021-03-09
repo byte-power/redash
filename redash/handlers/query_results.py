@@ -381,7 +381,10 @@ class QueryResultResource(BaseResource):
             if (
                 query is not None
                 and query_result is not None
-                and self.current_user.is_api_user()
+                and (
+                    self.current_user.is_api_user()
+                    and not self.current_user.is_embed
+                )
             ):
                 if query.query_hash != query_result.query_hash:
                     abort(404, message="No cached result found for this query.")
