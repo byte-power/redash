@@ -303,6 +303,43 @@ class TestQueryResultAPI(BaseTestCase):
         self.assertEqual(rv.status_code, 403)
         self.assertDictEqual(rv.json, error_messages["unsafe_when_shared"][0])
 
+
+    def test_prevents_execution_of_unsafe_queries_using_access_token_by_pass(self):
+        ds = self.factory.create_data_source(
+            group=self.factory.org.default_group, view_only=True
+        )
+        query = self.factory.create_query(
+            data_source=ds, options={"parameters": [{"name": "foo", "type": "text"}, {"name": "var", "type": "number"}]}
+        )
+        access_token = self.factory.create_access_token()
+        data = {"parameters": {"foo": "bar", "var": 3}}
+        rv = self.make_request(
+            "post",
+            "/api/queries/{}/results?access_token={}".format(query.id, access_token),
+            data=data,
+        )
+        self.assertEqual(rv.status_code, 200)
+
+    def test_prevents_execution_of_unsafe_queries_using_access_token_not_by_pass(self):
+        ds = self.factory.create_data_source(
+            group=self.factory.org.default_group, view_only=True
+        )
+        query = self.factory.create_query(
+            data_source=ds, options={"parameters": [{"name": "foo", "type": "text"}, {"name": "var", "type": "number"}]}
+        )
+        access_token = self.factory.create_access_token()
+        special_chars = [";", "'"]
+        for char in special_chars:
+            bar = "".join(["bar", char])
+            data = {"parameters": {"foo": bar, "var": 3}}
+            rv = self.make_request(
+                "post",
+                "/api/queries/{}/results?access_token={}".format(query.id, access_token),
+                data=data,
+            )
+            self.assertEqual(rv.status_code, 403)
+            self.assertDictEqual(rv.json, error_messages["unsafe_when_shared"][0])
+
     def test_access_with_query_api_key(self):
         ds = self.factory.create_data_source(
             group=self.factory.org.default_group, view_only=False
@@ -355,6 +392,25 @@ class TestQueryResultAPI(BaseTestCase):
             user=False,
         )
         self.assertEqual(rv.status_code, 404)
+
+    def test_query_embed_and_different_query_result(self):
+        ds = self.factory.create_data_source(
+            group=self.factory.org.default_group, view_only=False
+        )
+        query = self.factory.create_query(query_text="SELECT 8")
+        query_result2 = self.factory.create_query_result(
+            data_source=ds, query_hash="something-different"
+        )
+        access_token = self.factory.create_access_token()
+
+        rv = self.make_request(
+            "get",
+            "/api/queries/{}/results/{}.json?access_token={}".format(
+                query.id, query_result2.id, access_token
+            ),
+            user=False,
+        )
+        self.assertEqual(rv.status_code, 200)
 
     def test_signed_in_user_and_different_query_result(self):
         ds2 = self.factory.create_data_source(
